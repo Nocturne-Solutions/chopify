@@ -2,19 +2,19 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
+      context: ./back-end
     container_name: backend
     ports:
-      - "8080:80" # Ajusta según el puerto que use tu aplicación backend
+      - "8080:8080" # Ajusta según el puerto que use tu aplicación backend
     depends_on:
       - mongo
 
   frontend:
     build:
-      context: ./frontend
+      context: ./chopify-front
     container_name: frontend
     ports:
-      - "80:80" # Ajusta según el puerto que use tu aplicación frontend
+      - "80:3000" # Ajusta según el puerto que use tu aplicación frontend
     depends_on:
       - backend
 
