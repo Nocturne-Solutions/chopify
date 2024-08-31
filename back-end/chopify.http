@@ -1,0 +1,6 @@
+@chopify_HostAddress = http://localhost:5140
+
+GET {{chopify_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
