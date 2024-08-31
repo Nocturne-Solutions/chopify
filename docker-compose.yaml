@@ -14,7 +14,7 @@ services:
       context: ./chopify-front
     container_name: frontend
     ports:
-      - "80:80" # Ajusta según el puerto que use tu aplicación frontend
+      - "80:3000" # Ajusta según el puerto que use tu aplicación frontend
     depends_on:
       - backend
 
