@@ -2,7 +2,16 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var mongoClient = new MongoClient("mongodb://root:password@mongo:27017/");
+// Configuración de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
+var mongoClient = new MongoClient("mongodb://root:password@192.168.0.29:27017/");
 var mongoDatabase = mongoClient.GetDatabase("chopify");
 
 // Registrar la base de datos como servicio
