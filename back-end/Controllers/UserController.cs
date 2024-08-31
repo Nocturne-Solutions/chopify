@@ -1,76 +1,49 @@
-﻿using chopify.Entities;
+﻿using chopify.Models;
+using chopify.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using System;
-using System.Threading.Tasks;
 
 namespace chopify.Controllers
 {
     [ApiController]
     [Route("user")]
-    public class UserController : Controller
+    public class UserController(IUserService userService) : Controller
     {
-        private readonly IMongoDatabase _database;
+        private readonly IUserService _userService = userService;
 
-        public UserController(IMongoDatabase database)
+        [HttpGet]
+        public async Task<IActionResult> GetAll() =>
+            Ok(await _userService.GetAllAsync());
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
-            _database = database;
+            var user = await _userService.GetByIdAsync(id);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
         [HttpPost]
-        [Route("create")]
-        public async Task<ActionResult> Create([FromBody] UsernameRequest request)
+        public async Task<IActionResult> Create(UserUpsertDTO model)
         {
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                return BadRequest("Username is required.");
-            }
-
-            var user = new User
-            {
-                Username = request.Username,
-                Tag = GenerateShortTag()  // Generar el UUID truncado para el campo Tag
-            };
-
-            var collection = _database.GetCollection<User>("users");
-
-            try
-            {
-                await collection.InsertOneAsync(user);
-                return CreatedAtAction(nameof(Create), new {user.Username, user.Tag});
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            await _userService.CreateAsync(model);
+            return CreatedAtAction(nameof(Create), model);
         }
 
-        [HttpGet]
-        [Route("get")]
-        public async Task<ActionResult> Get()
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, UserUpsertDTO model)
         {
-            var collection = _database.GetCollection<User>("users");
-
-            var userList = await collection.Find(_ => true)
-                                            .Project(u => new
-                                            {
-                                                user = u.Username + "#" + u.Tag
-                                            })
-                                            .ToListAsync();
-
-            return Ok(userList);
+            await _userService.UpdateAsync(id, model);
+            return NoContent();
         }
 
-        private string GenerateShortTag()
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
-            // Generar un UUID y truncarlo a 8 caracteres
-            return Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+            await _userService.DeleteAsync(id);
+            return NoContent();
         }
-    }
-
-    public class UsernameRequest
-    {
-        public string Username { get; set; } = null!;
     }
 }

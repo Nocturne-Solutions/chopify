@@ -1,8 +1,10 @@
+using chopify.Configurations;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de CORS
+// CORS configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
@@ -11,21 +13,38 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader());
 });
 
-var mongoClient = new MongoClient("mongodb://root:password@192.168.0.29:27017/");
-var mongoDatabase = mongoClient.GetDatabase("chopify");
+// Custom dependency injection
+builder.Services.DependencyInjection();
 
-// Registrar la base de datos como servicio
-builder.Services.AddSingleton(mongoDatabase);
+// Get MongoDB connection settings from environment variables
+var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
+var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
 
-// Add services to the container.
+if (string.IsNullOrEmpty(mongoConnectionString))
+    throw new InvalidOperationException("MongoDB connection string is not properly configured.");
+
+if (string.IsNullOrEmpty(mongoDatabaseName))
+    throw new InvalidOperationException("MongoDB database name is not properly configured.");
+
+// Register IMongoClient using the connection string from the environment variable
+builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));
+
+// Register the database name in the settings (you can modify MongoDBSettings if necessary)
+builder.Services.Configure<MongoDBSettings>(options =>
+{
+    options.DatabaseName = mongoDatabaseName;
+});
+
+// AutoMapper configuration
+builder.Services.AddSingleton(AutoMapperConfig.GetInstance().CreateMapper());
+
+// Add controllers and additional services
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -33,11 +52,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAllOrigins");
-
 app.UseAuthorization();
 
+// Map controllers
 app.MapControllers();
 
 app.Run();
