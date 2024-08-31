@@ -46,6 +46,22 @@ namespace chopify.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("get")]
+        public async Task<ActionResult> Get()
+        {
+            var collection = _database.GetCollection<User>("users");
+
+            var userList = await collection.Find(_ => true)
+                                            .Project(u => new
+                                            {
+                                                user = u.Username + "#" + u.Tag
+                                            })
+                                            .ToListAsync();
+
+            return Ok(userList);
+        }
+
         private string GenerateShortTag()
         {
             // Generar un UUID y truncarlo a 8 caracteres
