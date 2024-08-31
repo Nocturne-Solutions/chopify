@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace chopify.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("user")]
     public class UserController : Controller
     {
         private readonly IMongoDatabase _database;

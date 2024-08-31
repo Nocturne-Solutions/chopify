@@ -6,7 +6,7 @@ using MongoDB.Driver;
 namespace chopify.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("music")]
     public class MusicController : Controller
     {
         private readonly IMongoDatabase _database;
