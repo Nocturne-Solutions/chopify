@@ -35,7 +35,9 @@ namespace chopify.Controllers
 
             // Actualizar o insertar la sugerencia
             var filter = Builders<Suggestion>.Filter.Eq(s => s.MusicId, request.MusicId);
-            var update = Builders<Suggestion>.Update.Inc(s => s.Count, 1);
+            var update = Builders<Suggestion>.Update
+                .Set(s => s.MusicName, music.Name)
+                .Inc(s => s.Count, 1);
             var options = new FindOneAndUpdateOptions<Suggestion> { IsUpsert = true, ReturnDocument = ReturnDocument.After };
 
             var result = await _suggestionCollection.FindOneAndUpdateAsync(filter, update, options);
@@ -43,6 +45,7 @@ namespace chopify.Controllers
             return Ok(new
             {
                 result.MusicId,
+                result.MusicName,
                 result.Count
             });
         }
