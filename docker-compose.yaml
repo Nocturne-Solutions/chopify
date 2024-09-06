@@ -4,6 +4,9 @@ services:
     build:
       context: ./back-end
     container_name: backend
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://root:password@mongo:27017
+      MONGODB_DATABASE_NAME: chopify
     ports:
       - "8080:8080" # Ajusta según el puerto que use tu aplicación backend
     depends_on:

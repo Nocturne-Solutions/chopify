@@ -1,10 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\back-end",
-    "\\back-end\\Controllers",
-    "\\back-end\\Entities"
+    "\\back-end"
   ],
-  "SelectedNode": "\\back-end\\Controllers\\UserController.cs",
+  "SelectedNode": "\\back-end\\chopify.sln",
   "PreviewInSolutionExplorer": false
 }
