@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Hacer una solicitud GET para obtener la lista de elementos
-    fetch('https://localhost:7251/user') // Reemplaza con tu URL de endpoint para obtener la lista
+    fetch('http://localhost:8080/user') // Reemplaza con tu URL de endpoint para obtener la lista
         .then(response => response.json())
         .then(data => {
             const itemList = document.getElementById('itemList');

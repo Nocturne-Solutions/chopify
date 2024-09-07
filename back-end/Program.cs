@@ -1,5 +1,4 @@
 using chopify.Configurations;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +20,10 @@ var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTI
 var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
 
 if (string.IsNullOrEmpty(mongoConnectionString))
-    throw new InvalidOperationException("MongoDB connection string is not properly configured.");
+    throw new ArgumentNullException("MONGODB_CONNECTION_STRING enviroment is not properly configured.");
 
 if (string.IsNullOrEmpty(mongoDatabaseName))
-    throw new InvalidOperationException("MongoDB database name is not properly configured.");
+    throw new ArgumentNullException("MONGODB_DATABASE_NAME enviroment is not properly configured.");
 
 // Register IMongoClient using the connection string from the environment variable
 builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));

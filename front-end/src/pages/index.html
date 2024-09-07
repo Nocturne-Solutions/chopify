@@ -102,7 +102,7 @@
                 alert('Por favor, ingrese su nombre.');
             } else {
                 // Enviar solicitud POST
-                fetch('https://localhost:7251/user', { // Reemplaza con tu URL de endpoint
+                fetch('http://localhost:8080/user', { // Reemplaza con tu URL de endpoint
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -115,7 +115,7 @@
                 .then(data => {
                     console.log('Success:', data);
                     // Redirigir a la nueva página
-                    window.location.href = 'list.html'; // Reemplaza con la URL de la nueva página
+                    window.location.href = '../pages/list.html'; // Reemplaza con la URL de tu página
                 })
                 .catch((error) => {
                     console.error('Error:', error);

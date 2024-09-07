@@ -10,8 +10,10 @@ namespace chopify.Configurations
         public static IServiceCollection DependencyInjection(this IServiceCollection services)
         {
             services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IMusicRepository, MusicRepository>();
 
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IMusicService, MusicService>();
 
             return services;
         }

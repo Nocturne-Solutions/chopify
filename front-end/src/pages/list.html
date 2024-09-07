@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Elementos</title>
-    <title>Lista de Elementos</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -16,23 +15,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
     <!-- GSAP Particle Plugin (Optional if using specific particle effects) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ParticleEffectPlugin.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="list-style.css">
+    <link rel="stylesheet" href="../styles/list.css">
+    <link rel="stylesheet" href="../styles/list-item.css">
 </head>
 <body>
     <div class="container">
         <div class="list-container">
-            <div class="title text-center mb-4">
-                <i class="fas fa-list"></i>&nbsp;Lista de Elementos
+            <!-- Contenedor para el título y el botón -->
+            <div class="header-container">
+                <div class="title">
+                    <i class="fas fa-trophy"></i>&nbsp;Ranking
+                </div>
+                <div class="button-wrapper">
+                    <button id="suggestBtn" aria-label="Sugerir">
+                        <span>Sugerir Canción</span>
+                    </button>
+                </div>
             </div>
-            <ul id="itemList" class="list-group">
-                <!-- Lista de elementos será cargada aquí -->
-            </ul>
-        </div>
-        <div class="button-card">
-            <div class="button-container">
-                <button class="btn btn-custom">Sugerir</button>
-            </div>
+            <ul id="songList"></ul>
         </div>
     </div>
 
@@ -40,6 +43,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <!-- Custom Script -->
-    <script src="list-scripts.js"></script>
+    <script src="../components/list-item.js"></script>
+    <script src="../components/list.js"></script>
 </body>
 </html>

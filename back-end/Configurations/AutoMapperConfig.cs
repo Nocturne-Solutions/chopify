@@ -14,6 +14,7 @@ namespace chopify.Configurations
             return new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<UserMapper>();
+                cfg.AddProfile<MusicMapper>();
             });
         }
     }
