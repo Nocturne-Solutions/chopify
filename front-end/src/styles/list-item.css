@@ -15,6 +15,10 @@ li {
     opacity: 1;
 }
 
+li:hover {
+    transform: scale(1.02);
+}
+
 .suggested-by {
     background-color: #333;
     color: #ff7043;
@@ -108,7 +112,7 @@ li {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s ease;
     position: relative;
     overflow: hidden;
     font-size: 40px;
@@ -116,35 +120,48 @@ li {
 
 .vote-btn:hover {
     background-color: #ff5722;
+    transform: scale(1.05);
+}
+.vote-btn:hover .fa-thumbs-up {
+    transform: scale(1.3);
 }
 
 .vote-btn i {
     position: absolute;
-    transition: transform 0.3s, opacity 0.3s;
+    transition: transform 0.3s ease, opacity 0.5s ease;
 }
 
-.vote-btn .fa-thumbs-up {
+.vote-btn .fa-thumbs-up.fade-out {
+    opacity: 0;
+    transform: translateX(-50px);
+}
+
+.vote-btn .fa-check.fade-in {
     opacity: 1;
     transform: translateX(0);
 }
 
-.vote-btn .confirm-icon {
+.fa-check {
     opacity: 0;
     transform: translateX(50px);
+}
+
+.fa-thumbs-up {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .vote-btn.confirming {
     background-color: #4caf50;
 }
 
-.vote-btn.confirming .fa-thumbs-up {
-    opacity: 0;
-    transform: translateX(-50px);
+.vote-btn.confirming:hover {
+    background-color: #388e3c;
+    transform: scale(1.05);
 }
 
-.vote-btn.confirming .confirm-icon {
-    opacity: 1;
-    transform: translateX(0);
+.vote-btn.confirming:hover .fa-check {
+    transform: scale(1.3);
 }
 
 .song-voted {
