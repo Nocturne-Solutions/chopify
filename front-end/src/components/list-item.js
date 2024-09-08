@@ -138,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
         voteButton.addEventListener('click', voteForItem);
     }
 
+    // Testing songs for visualization.
     addSong("Juan Perez", "Echoes of Dawn", "The Nightingales", "https://images.unsplash.com/photo-1519681393784-d120267933ba");
     addSong("Maria Lopez", "Silent Whispers", "The Dreamers", "https://images.unsplash.com/photo-1531746790731-6c087fecd65a");
     addSong("Carlos Gomez", "Rising Sun", "Sunset Riders - Luna Bloom", "https://images.unsplash.com/photo-1470115636492-6d2b56c8f5b2");
