@@ -4,7 +4,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-image: url('https://static.wixstatic.com/media/11062b_0bb176c63fe24ad0b8cf36eb45187620~mv2.jpg/v1/fill/w_2391,h_1594,al_c,q_90/11062b_0bb176c63fe24ad0b8cf36eb45187620~mv2.webp');
+    background-image: url('../../assets/images/background.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -32,61 +32,6 @@ body {
     position: relative;
 }
 
-.header-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-}
-
-.title {
-    font-size: 3rem;
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: #e0e0e0;
-}
-
-.title i {
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
-    font-size: 3rem;
-    color: #ffffff;
-}
-
-.button-wrapper {
-    display: flex;
-    justify-content: left;
-    padding: 0;
-}
-
-#suggestBtn {
-    padding: 10px 20px;
-    border-radius: 20px;
-    background-color: #ff7043;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-#suggestBtn:hover {
-    background-color: #ff5722;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-#suggestBtn span {
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-
 @media (max-width: 600px) {
     .container {
         width: 90%;
@@ -104,6 +49,46 @@ body {
     .title i {
         font-size: 1.5rem;
     }
+}
+
+.search-wrapper {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: rgba(30, 30, 30, 0.8);
+    padding: 0.5rem 1rem;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 28px;
+    color: #ff7043;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 10px 12px 45px;
+    border: none;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 20px;
+    caret-color: #ff7043;
+    transition: background-color 0.3s ease;
+}
+
+.search-input:focus {
+
+    outline: none;
 }
 
 .list-container::-webkit-scrollbar {

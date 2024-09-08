@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const li = button.closest('li');
         const voteBtn = li.querySelector('.vote-btn');
         const voteIcon = voteBtn.querySelector('.fa-thumbs-up');
-        const confirmIcon = voteBtn.querySelector('.confirm-icon');
+        const confirmIcon = voteBtn.querySelector('.fa-check');
 
         if (voteBtn.classList.contains('confirming')) {
             return;
@@ -73,19 +73,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Cambiar el estado del botón a confirmar
         voteBtn.classList.add('confirming');
-        voteIcon.style.opacity = '0';
-        voteIcon.style.transform = 'translateX(-50px)';
-        confirmIcon.style.opacity = '1';
-        confirmIcon.style.transform = 'translateX(0)';
-
-        //clearTimeout(voteTimeout);
+        voteIcon.classList.add('fade-out');
+        confirmIcon.classList.add('fade-in');
 
         voteTimeout = setTimeout(() => {
             voteBtn.classList.remove('confirming');
-            voteIcon.style.opacity = '1';
-            voteIcon.style.transform = 'translateX(0)';
-            confirmIcon.style.opacity = '0';
-            confirmIcon.style.transform = 'translateX(50px)';
+            voteIcon.classList.remove('fade-out');
+            confirmIcon.classList.remove('fade-in');
         }, 2000);
 
         confirmIcon.addEventListener('click', function () {
@@ -98,12 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 li.classList.add('song-voted');
                 songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('hidden'));
 
-                clearTimeout(voteTimeout);
                 voteBtn.classList.remove('confirming');
-                voteIcon.style.opacity = '1';
-                voteIcon.style.transform = 'translateX(0)';
-                confirmIcon.style.opacity = '0';
-                confirmIcon.style.transform = 'translateX(50px)';
+                voteIcon.classList.remove('fade-out');
+                confirmIcon.classList.remove('fade-in');
                 selectedItem = li; // Marcar el ítem como seleccionado
             }
         });
@@ -126,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <button class="vote-btn ${selectedItem ? 'hidden-vote-btn' : ''}">
                 <i class="fas fa-thumbs-up"></i>
-                <i class="fas fa-check confirm-icon"></i>
+                <i class="fas fa-check"></i>
             </button>
         `;
 
