@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('http://localhost:8080/suggestions')
+    const suggestButton = document.getElementById('suggestBtn');
+
+    /*fetch('http://localhost:8080/suggestions')
         .then(response => response.json())
         .then(data => {
             const itemList = document.getElementById('itemList');
@@ -9,5 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch((error) => {
             console.error('Error:', error);
-        });
+        });*/
+        
+
+    suggestButton.addEventListener('click', function() {
+        window.location.href = 'suggestions.html';
+    });
 });

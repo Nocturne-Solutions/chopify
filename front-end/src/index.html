@@ -14,7 +14,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-image: url('https://static.wixstatic.com/media/11062b_0bb176c63fe24ad0b8cf36eb45187620~mv2.jpg/v1/fill/w_2391,h_1594,al_c,q_90/11062b_0bb176c63fe24ad0b8cf36eb45187620~mv2.webp'); /* Reemplaza con la URL de tu imagen */
+            background-image: url('../assets/images/background.webp');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -57,6 +57,7 @@
         }
         .title {
             font-size: 1.5rem;
+            font-family: 'Poppins', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -102,11 +103,9 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Success:', data);
-                    window.location.href = 'pages/list.html';
+                    window.location.href = 'ranking.html';
                 })
                 .catch((error) => {
-                    console.error('Error:', error);
                     alert('Error al realizar el login.');
                 });
             }

@@ -76,8 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
         voteIcon.classList.add('fade-out');
         confirmIcon.classList.add('fade-in');
 
-        //clearTimeout(voteTimeout);
-
         voteTimeout = setTimeout(() => {
             voteBtn.classList.remove('confirming');
             voteIcon.classList.remove('fade-out');
@@ -94,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 li.classList.add('song-voted');
                 songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('hidden'));
 
-                clearTimeout(voteTimeout);
                 voteBtn.classList.remove('confirming');
                 voteIcon.classList.remove('fade-out');
                 confirmIcon.classList.remove('fade-in');
