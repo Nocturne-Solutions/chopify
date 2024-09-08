@@ -1,0 +1,173 @@
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    position: relative;
+    display: flex;
+    padding: 2% 2%;
+    background: #2c2c2c;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    align-items: center;
+    transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.3s;
+    opacity: 1;
+}
+
+li:hover {
+    transform: scale(1.02);
+}
+
+li.suggested {
+    background-color: #181818;
+    opacity: 0.7;
+    position: relative;
+    transition: transform 0.5s ease opacity 0.5s ease background-color 0.3s;
+}
+
+.song-cover {
+    width: 100px;
+    height: 100px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-right: 2%;
+}
+
+.song-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.song-name {
+    font-weight: bold;
+    font-size: 2em;
+    color: #e0e0e0;
+}
+
+.song-artists {
+    color: #b0b0b0;
+    font-size: 1.4em;
+    margin-bottom: 5px;
+}
+
+.suggest-btn {
+    background-color: #ff7043;
+    border: none;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-size: 40px;
+}
+
+.suggest-btn:hover {
+    background-color: #ff5722;
+}
+.suggest-btn:hover .fa-lightbulb {
+    transform: scale(1.3);
+}
+
+.suggest-btn i {
+    position: absolute;
+    transition: transform 0.3s ease, opacity 0.5s ease;
+}
+
+.suggest-btn .fa-lightbulb.fade-out {
+    opacity: 0;
+    transform: translateX(-50px);
+}
+
+.suggest-btn .fa-check.fade-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.fa-check {
+    opacity: 0;
+    transform: translateX(50px);
+}
+
+.fa-lightbulb {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.suggest-btn.confirming {
+    background-color: #4caf50;
+}
+
+.suggest-btn.confirming:hover {
+    background-color: #388e3c;
+}
+
+.suggest-btn.confirming:hover .fa-check {
+    transform: scale(1.3);
+}
+
+li.reorder {
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+@keyframes fadeInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInFromBottomSuggested {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 0.7;
+        transform: translateY(0);
+    }
+}
+
+.new-item:not(.suggested) {
+    animation: fadeInFromBottom 0.3s ease-out forwards;
+}
+
+li.suggested.new-item {
+    animation: fadeInFromBottomSuggested 0.3s ease-out forwards;
+}
+
+.suggested-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #2c2c2c;
+    color: #ff7043;
+    padding: 5px 10px;
+    font-size: 1em;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    z-index: 10;
+    letter-spacing: 0.5px;
+    transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.3s;
+}
+
+.suggested-label:hover {
+    transform: scale(1.02);
+}
+
+.sugest-by {
+    text-transform: uppercase;
+}
