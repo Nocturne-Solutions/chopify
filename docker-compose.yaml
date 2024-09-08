@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./back-end
+    container_name: backend
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://root:password@mongo:27017
+      MONGODB_DATABASE_NAME: chopify
+      SPOTIFY_CLIENT_ID: 7d409573d3194213a17699944f8c84de
+      SPOTIFY_CLIENT_SECRET: ebd40db1ce604ba9a0c2105316a8ed16
+    ports:
+      - "8080:8080" # Ajusta según el puerto que use tu aplicación backend
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./front-end
+    container_name: frontend
+    ports:
+      - "80:3000" # Ajusta según el puerto que use tu aplicación frontend
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
