@@ -20,5 +20,16 @@ namespace chopify.Controllers
 
             return Ok(music);
         }
+
+        [HttpGet("/most-popular")]
+        public async Task<IActionResult> MostPopularSongsArgentina()
+        {
+            var music = await _musicService.GetMostPopularSongsArgentinaAsync();
+
+            if (music == null)
+                return NotFound();
+
+            return Ok(music);
+        }
     }
 }
