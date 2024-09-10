@@ -28,7 +28,7 @@ namespace chopify.External
         }
 
         public static SpotifyService Instance => _instance.Value;
-        public async Task<IEnumerable<Music>> FetchTracksAsync(string search, int limit = 25)
+        public async Task<IEnumerable<FullTrack>> FetchTracksAsync(string search, int limit = 25)
         {
             SearchRequest query = new(SearchRequest.Types.Track, search)
             {
@@ -40,24 +40,23 @@ namespace chopify.External
             if (result == null || result.Tracks == null || result.Tracks.Items == null)
                 return [];
 
-            return result.Tracks.Items.Select(MapTrackToMusic) ?? [];
+            return result.Tracks.Items;
         }
 
-        private Music MapTrackToMusic(FullTrack track)
+        public async Task<IEnumerable<FullTrack>> GetMostPopularTracksArgentinaAsync()
         {
-            var artist = track.Artists != null && track.Artists.Count != 0
-                ? string.Join(" - ", track.Artists.Select(ac => ac.Name))
-                : "Unknown";
+            var playlist = await client.Playlists.Get("37i9dQZEVXbMMy2roB9myp");
 
-            return new Music
-            {
-                SpotifyId = track.Id,
-                Name = track.Name,
-                Artist = artist,
-                FirstReleaseDate = track.Album.ReleaseDate,
-                Duration = new TimeSpan(0, 0, 0, 0, track.DurationMs),
-                CoverUrl = track.Album.Images[0].Url
-            };
+            var fullTracks = new List<FullTrack>();
+
+            if (playlist == null || playlist.Tracks == null || playlist.Tracks.Items == null)
+                return [];
+
+            foreach (PlaylistTrack<IPlayableItem> item in playlist.Tracks.Items)
+                if (item.Track is FullTrack track && track != null)
+                    fullTracks.Add(track);
+
+            return fullTracks;
         }
     }
 }
