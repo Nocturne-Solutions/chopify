@@ -1,5 +1,5 @@
-﻿using chopify.Services.Implementations;
-using chopify.Services.Interfaces;
+﻿using chopify.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace chopify.Controllers
@@ -10,7 +10,8 @@ namespace chopify.Controllers
     {
         private readonly IMusicService _musicService = musicService;
 
-        [HttpGet("/fetch/{search}")]
+        [HttpGet("fetch/{search}")]
+        [Authorize]
         public async Task<IActionResult> Fetch(string search)
         {
             var music = await _musicService.FetchAsync(search);
@@ -21,7 +22,8 @@ namespace chopify.Controllers
             return Ok(music);
         }
 
-        [HttpGet("/most-popular")]
+        [HttpGet("most-popular")]
+        [Authorize]
         public async Task<IActionResult> MostPopularSongsArgentina()
         {
             var music = await _musicService.GetMostPopularSongsArgentinaAsync();

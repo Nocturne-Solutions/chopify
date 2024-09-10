@@ -4,25 +4,43 @@ using chopify.Data.Repositories.Interfaces;
 using chopify.Models;
 using chopify.Services.Interfaces;
 using MongoDB.Bson;
+using System.Globalization;
+using System.Text;
 
 namespace chopify.Services.Implementations
 {
     public class UserService(IUserRepository userRepository, IMapper mapper) : IUserService
     {
+        private static readonly SemaphoreSlim _createSemaphore = new(1, 1);
+        private static readonly SemaphoreSlim _updateSemaphore = new(1, 1);
+
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IMapper _mapper = mapper;
 
-        public async Task CreateAsync(UserUpsertDTO dto)
+        public async Task<string> CreateAsync(UserUpsertDTO dto)
         {
-            var tag = Guid.NewGuid().ToString("N")[..8];
+            await _createSemaphore.WaitAsync();
 
-            var newUser = new User()
+            try
             {
-                Name = dto.Name,
-                Tag = tag
-            };
+                var normalizeName = NormalizeName(dto.Name);    
+                var tag = await _userRepository.GetLastTagByNormalizedName(normalizeName);
 
-            await _userRepository.CreateAsync(newUser);
+                var newUser = new User()
+                {
+                    Name = dto.Name,
+                    NormalizedName = normalizeName,
+                    Tag = tag + 1
+                };
+
+                await _userRepository.CreateAsync(newUser);
+
+                return string.Concat(newUser.Name, "#", newUser.Tag);
+            }
+            finally
+            {
+                _createSemaphore.Release();
+            }
         }
 
         public async Task DeleteAsync(string id)
@@ -49,7 +67,7 @@ namespace chopify.Services.Implementations
             return _mapper.Map<UserReadDTO>(entity);
         }
 
-        public async Task UpdateAsync(string id, UserUpsertDTO dto)
+        public async Task<string> UpdateAsync(string id, UserUpsertDTO dto)
         {
             if (!ObjectId.TryParse(id, out var objectId))
                 throw new ArgumentException("El formato del ID no es válido.", nameof(id));
@@ -59,9 +77,42 @@ namespace chopify.Services.Implementations
             if (user == null)
                 throw new KeyNotFoundException($"No se encontró ningún documento con el ID '{id}'.");
 
-            user.Name = dto.Name;
+            await _updateSemaphore.WaitAsync();
 
-            await _userRepository.UpdateAsync(objectId, user);
+            try
+            {
+                var normalizeName = NormalizeName(dto.Name);
+                var tag = await _userRepository.GetLastTagByNormalizedName(normalizeName);
+
+                user.Name = dto.Name;
+                user.NormalizedName = normalizeName;
+                user.Tag = tag + 1;
+
+                await _userRepository.UpdateAsync(objectId, user);
+
+                return string.Concat(user.Name, "#", user.Tag);
+            }
+            finally
+            {
+                _updateSemaphore.Release();
+            }           
+        }
+
+        private static string NormalizeName(string name)
+        {
+            string formD = name.Normalize(NormalizationForm.FormD);
+            StringBuilder sb = new();
+
+            foreach (char ch in formD)
+            {
+                UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                {
+                    sb.Append(ch);
+                }
+            }
+
+            return sb.ToString().Normalize(NormalizationForm.FormC).ToLower();
         }
     }
 }

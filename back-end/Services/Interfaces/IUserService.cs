@@ -6,8 +6,8 @@ namespace chopify.Services.Interfaces
     {
         Task<IEnumerable<UserReadDTO>> GetAllAsync();
         Task<UserReadDTO> GetByIdAsync(string id);
-        Task CreateAsync(UserUpsertDTO dto);
-        Task UpdateAsync(string id, UserUpsertDTO dto);
+        Task<string> CreateAsync(UserUpsertDTO dto);
+        Task<string> UpdateAsync(string id, UserUpsertDTO dto);
         Task DeleteAsync(string id);
     }
 }

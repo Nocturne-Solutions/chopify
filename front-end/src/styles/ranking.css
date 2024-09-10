@@ -20,6 +20,38 @@ body {
     gap: 1rem;
 }
 
+.user-container {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1rem;
+    border-radius: 12px;
+    background-color: rgba(40, 40, 40, 0.85); /* Color oscuro consistente con el tema */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6); /* Sombra más suave para resaltar de manera discreta */
+    border: 1px solid #495057;
+    color: #ff7043; /* Letra en color naranja */
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: auto; /* Empuja el contenedor hacia la derecha */
+    cursor: default;
+    width: fit-content; /* Ajusta el ancho al contenido */
+}
+
+.user-icon {
+    font-size: 1.5rem; /* Tamaño del icono */
+    margin-right: 1rem; /* Espacio entre el icono y el texto */
+    color: #ff7043; /* Color del icono */
+}
+
+.user-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); /* Efecto hover ligero para sutilmente destacar */
+}
+
+.user-label {
+    color: #ff7043; /* Mantiene un contraste adecuado con el fondo oscuro */
+}
+
 .list-container {
     padding: 1.5rem;
     border-radius: 12px;
