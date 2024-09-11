@@ -64,6 +64,29 @@ body {
     position: relative;
 }
 
+.custom-spinner {
+    cursor: wait;
+    display: none;
+    width: 5rem;
+    height: 5rem;
+    border: 0.5em solid rgba(255, 112, 67, 0.3); /* Borde semitransparente en todo el contorno */
+    border-left-color: #ff7043; /* Borde izquierdo naranja para crear la línea continua */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 0 8px rgba(255, 112, 67, 0.8); /* Sombra para un efecto brillante y suave */
+    position: relative;
+    top: calc(45% - 5rem);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .header-container {
     display: flex;
     align-items: center;
