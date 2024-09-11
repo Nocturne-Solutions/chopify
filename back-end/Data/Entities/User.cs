@@ -11,7 +11,10 @@ namespace chopify.Data.Entities
         [BsonElement("Name")]
         public string Name { get; set; } = string.Empty;
 
+        [BsonElement("NormalizedName")]
+        public string NormalizedName { get; set; } = string.Empty;
+
         [BsonElement("Tag")]
-        public string Tag { get; set; } = string.Empty;
+        public int Tag { get; set; }
     }
 }
