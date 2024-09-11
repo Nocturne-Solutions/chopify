@@ -14,9 +14,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Ejecuta comandos SSH
+        shell: pwsh
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 << 'EOF'
+          $command = @"
             cd /chopify
             git pull origin franco-develop
             docker-compose up -d
-          EOF
+          "@
+
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 $command
