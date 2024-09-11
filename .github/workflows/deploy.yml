@@ -1,19 +1,25 @@
-name: Deploy
+name: Ejecutar SSH
 
 on:
   push:
     branches:
-      - franco-develop
+      - main
 
 jobs:
-  deploy:
-    runs-on: [self-hosted]
+  ssh:
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: Verifica el repositorio
         uses: actions/checkout@v3
 
-      - name: Deploy using SSH and Docker Compose
-        shell: bash
+      - name: Configura SSH
         run: |
-          ssh franco@192.168.30.11
+          mkdir -p ~/.ssh
+          cp C:/Users/franc/.ssh/id_rsa ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+      - name: Ejecuta comandos SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no franco@192.168.30.11 'echo puto'
