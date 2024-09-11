@@ -3,11 +3,11 @@ name: Ejecutar SSH
 on:
   push:
     branches:
-      - main
+      - franco-develop
 
 jobs:
   ssh:
-    runs-on: self-hosted
+    runs-on: [self-hosted]
 
     steps:
       - name: Verifica el repositorio
