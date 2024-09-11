@@ -18,7 +18,7 @@ namespace chopify.External
 
         public static MusicBrainzService Instance => _instance.Value;
 
-        public async Task<IEnumerable<Music>> FetchTracksAsync(string search, int limit = 25)
+        public async Task<IEnumerable<Song>> FetchTracksAsync(string search, int limit = 25)
         {
             var query = $"{search}";
 
@@ -27,7 +27,7 @@ namespace chopify.External
             return recordings.Results.Select(r => MapRecordingToMusic(r.Item));
         }
 
-        private Music MapRecordingToMusic(IRecording recording)
+        private Song MapRecordingToMusic(IRecording recording)
         {
             var artist = recording.ArtistCredit != null && recording.ArtistCredit.Any()
                 ? string.Join(" - ", recording.ArtistCredit.Select(ac => ac.Name))
@@ -36,7 +36,7 @@ namespace chopify.External
             var release = recording.Releases?[recording.Releases.Count - 1];
             var coverUrl = release != null ? $"https://coverartarchive.org/release/{release.Id}/front" : string.Empty;
 
-            return new Music
+            return new Song
             {
                 Id = MbidToObjectId(recording.Id),
                 Name = recording.Title ?? "null",
