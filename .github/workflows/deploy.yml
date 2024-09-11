@@ -13,13 +13,6 @@ jobs:
       - name: Verifica el repositorio
         uses: actions/checkout@v3
 
-      - name: Configura SSH
-        run: |
-          mkdir -p ~/.ssh
-          cp C:/Users/franc/.ssh/id_rsa ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-
       - name: Ejecuta comandos SSH
         run: |
-          ssh -o StrictHostKeyChecking=no franco@192.168.30.11 'echo puto'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 'echo puto'
