@@ -1,5 +1,8 @@
 using chopify.Configurations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +21,16 @@ builder.Services.DependencyInjection();
 // Get MongoDB connection settings from environment variables
 var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
 var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
+var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
-if (string.IsNullOrEmpty(mongoConnectionString))
+if (string.IsNullOrWhiteSpace(mongoConnectionString))
     throw new ArgumentNullException("MONGODB_CONNECTION_STRING enviroment is not properly configured.");
 
-if (string.IsNullOrEmpty(mongoDatabaseName))
+if (string.IsNullOrWhiteSpace(mongoDatabaseName))
     throw new ArgumentNullException("MONGODB_DATABASE_NAME enviroment is not properly configured.");
+
+if (string.IsNullOrWhiteSpace(jwtSecretKey))
+    throw new ArgumentNullException("JWT_SECRET_KEY enviroment is not properly configured.");
 
 // Register IMongoClient using the connection string from the environment variable
 builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));
@@ -36,6 +43,26 @@ builder.Services.Configure<MongoDBSettings>(options =>
 
 // AutoMapper configuration
 builder.Services.AddSingleton(AutoMapperConfig.GetInstance().CreateMapper());
+
+// jwt tokens validation
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "chopify.com.ar",
+        ValidAudience = "chopify.com.ar",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+    };
+});
 
 // Add controllers and additional services
 builder.Services.AddControllers();

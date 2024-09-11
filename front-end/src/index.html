@@ -7,6 +7,7 @@
     <title>Chopify</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="../assets/images/beer-icon.png" type="image/png">
     <style>
         body {
             display: flex;
@@ -22,68 +23,120 @@
             backdrop-filter: blur(5px);
         }
         .login-card {
-            padding: 2rem;
-            border-radius: 8px;
+            padding: 1rem 2rem 2rem 2rem;
+            border-radius: 12px;
             background-color: rgba(30, 30, 30, 0.9);
-            box-shadow: 0 0px 20px rgba(10, 0, 0, 0.8);
-            transform: scale(1.3);
+            box-shadow: 0 0 25px rgba(10, 0, 0, 0.8);
+            transform: scale(1.4);
             transform-origin: center;
+            max-width: 400px;
+            width: 100%;
         }
-        .form-control {
+        .input-group .form-control {
             background-color: #2e2e2e;
             color: #ffffff;
             border: 1px solid #575757;
-            caret-color: #ffffff;
+            caret-color: #ff7043;
         }
-        .form-control:focus {
+        .input-group .form-control::placeholder {
+            color: #d3d3d3; /* Gris claro para el hint */
+        }
+        .input-group .form-control:focus {
             background-color: #2e2e2e;
             color: #ffffff;
             border-color: #575757;
             box-shadow: none;
         }
+        .input-group-text {
+            background-color: #2e2e2e;
+            border: 1px solid #575757;
+            color: #ff7043; /* Color del icono */
+        }
         .btn-primary {
-            background-color: #da6517;
-            border-color: #ee6d17;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background-color: #ff7043;
+            color: #fff;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         .btn-primary:hover {
-            background-color: #ff7c24;
-            border-color: #ff7c24;
-        }
-        a {
-            color: #007bff;
-        }
-        a:hover {
-            color: #0056b3;
+            background-color: #ff5722;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.05);
         }
         .title {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-family: 'Poppins', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #ffffff; /* Título en blanco */
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.2rem;
+            margin-top: 0.5rem; /* Reducir el margen superior */
+            letter-spacing: 1px;
         }
         .title i {
-            margin-right: 0.5rem;
-            font-size: 1.8rem;
+            margin-right: 0.6rem;
+            font-size: 2.2rem;
         }
     </style>
 </head>
 <body>
     <div class="login-card">
-        <div class="title mb-4 text-center">
-            Chopify&nbsp;<i class="fas fa-beer"></i>
+        <div class="title text-center">
+            Chopify&nbsp;<img src="../assets/images/beer-icon.png" alt="Beer Icon" style="width: 36px; height: 36px;">
         </div>
         <form id="loginForm">
-            <div class="mb-3">
-                <label for="name" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="name" required>
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" class="form-control" id="name" placeholder="Nombre" required autocomplete="off" maxlength="32">
             </div>
             <button type="submit" class="btn btn-primary w-100">Ingresar</button>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="components/config.js"></script>
+    <script src="components/utils.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sessionToken = localStorage.getItem('sessionToken');
+            const sessionExpiry = localStorage.getItem('sessionExpiry');
+            const sessionUser = localStorage.getItem('sessionUser');
+
+            if (sessionToken && sessionExpiry && sessionUser && new Date(sessionExpiry) > new Date()) {
+                fetch(API_BASE_URL + '/user/validate-token', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${sessionToken}`
+                    },
+                  })
+                    .then(response => {
+                      if (!response.ok) {
+                          throw new Error(`HTTP error! Status: ${response.status}`);
+                      }
+              
+                      return response.json();
+                    })
+                    .then(data => {
+                      if (data.valid) {
+                        window.location.href = 'pages/ranking.html'; // Redirigir a la siguiente página
+                      }
+                    })
+                    .catch(error => {
+                      alert('Error validando sesión: ' + error.message);
+                    });
+            }
+        });
+
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -92,24 +145,30 @@
             if (name === '') {
                 alert('Por favor, ingrese su nombre.');
             } else {
-                fetch('http://localhost:8080/user', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name: name
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    window.location.href = 'ranking.html';
-                })
-                .catch((error) => {
-                    alert('Error al realizar el login.');
-                });
+                loginUser(name);
             }
         });
+
+        function loginUser(name) {
+            fetch(API_BASE_URL + '/user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: name })
+            })
+              .then(response => response.json())
+              .then(data => {
+                if (data.token && data.expiry && data.username) {
+                  localStorage.setItem('sessionToken', data.token);
+                  localStorage.setItem('sessionExpiry', data.expiry);
+                  localStorage.setItem('sessionUser', data.username);
+
+                  window.location.href = 'pages/ranking.html'; // Redirigir a la siguiente página
+                } else {
+                  alert('Error en la validación del usuario.');
+                }
+              })
+              .catch(error => console.error('Error en el login:', error));
+            }          
     </script>
 </body>
 </html>
