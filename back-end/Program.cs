@@ -24,13 +24,13 @@ var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAM
 var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 if (string.IsNullOrWhiteSpace(mongoConnectionString))
-    throw new ArgumentNullException("MONGODB_CONNECTION_STRING enviroment is not properly configured.");
+    throw new ArgumentNullException(nameof(mongoConnectionString), "MONGODB_CONNECTION_STRING environment is not properly configured.");
 
 if (string.IsNullOrWhiteSpace(mongoDatabaseName))
-    throw new ArgumentNullException("MONGODB_DATABASE_NAME enviroment is not properly configured.");
+    throw new ArgumentNullException(nameof(mongoDatabaseName), "MONGODB_DATABASE_NAME environment is not properly configured.");
 
 if (string.IsNullOrWhiteSpace(jwtSecretKey))
-    throw new ArgumentNullException("JWT_SECRET_KEY enviroment is not properly configured.");
+    throw new ArgumentNullException(nameof(jwtSecretKey), "JWT_SECRET_KEY environment is not properly configured.");
 
 // Register IMongoClient using the connection string from the environment variable
 builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));

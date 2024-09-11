@@ -1,17 +1,20 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace chopify.Data.Entities
 {
-    public class Suggestions : IEntity
+    public class Suggestion : IEntity
     {
+        [BsonId]
         public ObjectId Id { get; set; }
 
-        public ObjectId SongMongoId {  get; set; }
-
-        public string SongSpotifyId { get; set; } = string.Empty;
-
-        public ObjectId UserId { get; set; }
-
+        [BsonElement("SpotifySongId")]
+        public string SpotifySongId { get; set; } = string.Empty;
+        
+        [BsonElement("SuggestedBy")]
+        public string SuggestedBy { get; set; } = string.Empty;
+        
+        [BsonElement("Votes")]
         public int Votes {  get; set; }
     }
 }

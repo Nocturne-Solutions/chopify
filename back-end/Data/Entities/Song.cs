@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace chopify.Data.Entities
 {
-    public class Music : IEntity
+    public class Song : IEntity
     {
         [BsonId]
         public ObjectId Id { get; set; }
