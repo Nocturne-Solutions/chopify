@@ -9,6 +9,7 @@ services:
       MONGODB_DATABASE_NAME: ${MONGODB_DATABASE_NAME}
       SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     ports:
       - "8080:8080" # Ajusta según el puerto que use tu aplicación backend
     depends_on:

@@ -1,0 +1,23 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, NB-FRANCO]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy using SSH and Docker Compose
+        run: |
+          ssh -o StrictHostKeyChecking=no franco@192.168.30.11 << 'EOF'
+            cd /chopify
+            git pull origin franco-develop
+            docker-compose pull
+            docker-compose up -d
+          EOF
