@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkSuggestions()
     {
-        fetch(API_BASE_URL + '/music/suggestions', {
+        fetch(API_BASE_URL + '/song/suggestions', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -66,29 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (suggestBtn.classList.contains('confirming')) {
             let songId = li.getAttribute('data-song-id');
 
-            fetch(API_BASE_URL + '/music/suggest', {
+            fetch(API_BASE_URL + '/suggestion/suggest', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ songId: songId, suggestedBy: username })
+                body: JSON.stringify({ spotifySongId: songId, suggestedBy: username })
             })
             .then(response => {
                 if (response.status === 401) {
                     alert('La sesión ha expirado o no has iniciado sesión.');
                     window.location.href = '../index.html';
-                } else if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                return response.json();
-            })
-            .then(data => {
-                if (!data.success) {
-                    alert(data.error);
-                } else {
+                } else if (response.status === 409) {
+                    alert('Otro usuario ya ha sugerido esta canción.');
+                } else if (response.ok) {
                     window.location.href = '../pages/ranking.html';
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
             })
             .catch(error => {
@@ -162,11 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (query != '')
         {
-            endpoint = '/music/fetch/' + encodeURIComponent(query);
+            endpoint = '/song/fetch/' + encodeURIComponent(query);
         }
         else
         {
-            endpoint = '/music/most-popular';
+            endpoint = '/song/most-popular';
         }
 
         showSpinner();
@@ -192,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resetButtonAndSpinner();
 
             data.forEach(item => {
-                addSong(item.id, item.name, item.artist, item.coverUrl, false, '');
+                addSong(item.id, item.name, item.artist, item.coverUrl, item.isSuggested, item.suggestedBy);
             });
         })
         .catch(error => {
@@ -213,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkSession();
 
-    setInterval(checkSuggestions, 2000);
+    //setInterval(checkSuggestions, 2000);
     
     filterSongs('');
 });
