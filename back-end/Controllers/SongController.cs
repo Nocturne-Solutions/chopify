@@ -5,33 +5,33 @@ using Microsoft.AspNetCore.Mvc;
 namespace chopify.Controllers
 {
     [ApiController]
-    [Route("music")]
-    public class MusicController(IMusicService musicService) : Controller
+    [Route("song")]
+    public class SongController(ISongService songService) : Controller
     {
-        private readonly IMusicService _musicService = musicService;
+        private readonly ISongService _songService = songService;
 
         [HttpGet("fetch/{search}")]
         [Authorize]
         public async Task<IActionResult> Fetch(string search)
         {
-            var music = await _musicService.FetchAsync(search);
+            var song = await _songService.FetchAsync(search);
 
-            if (music == null)
+            if (song == null)
                 return NotFound();
 
-            return Ok(music);
+            return Ok(song);
         }
 
         [HttpGet("most-popular")]
         [Authorize]
         public async Task<IActionResult> MostPopularSongsArgentina()
         {
-            var music = await _musicService.GetMostPopularSongsArgentinaAsync();
+            var songs = await _songService.GetMostPopularSongsArgentinaAsync();
 
-            if (music == null)
+            if (songs == null)
                 return NotFound();
 
-            return Ok(music);
+            return Ok(songs);
         }
     }
 }

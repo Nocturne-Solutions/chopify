@@ -1,6 +1,6 @@
 ﻿namespace chopify.Models
 {
-    public class MusicReadDTO
+    public class SongReadDTO
     {
         public string Id { get; set; } = string.Empty;
 
@@ -13,5 +13,7 @@
         public TimeSpan Duration { get; set; }
 
         public string CoverUrl { get; set; } = string.Empty;
+        
+        public bool IsSuggested { get; set; } = false;
     }
 }

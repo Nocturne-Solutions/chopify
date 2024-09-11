@@ -28,7 +28,7 @@ namespace chopify.External
         }
 
         public static SpotifyService Instance => _instance.Value;
-        public async Task<IEnumerable<FullTrack>> FetchTracksAsync(string search, int limit = 10)
+        public async Task<IEnumerable<FullTrack>> FetchTracksAsync(string search, int limit = 15)
         {
             SearchRequest query = new(SearchRequest.Types.Track, search)
             {
@@ -47,16 +47,17 @@ namespace chopify.External
         {
             var playlist = await client.Playlists.Get("37i9dQZEVXbMMy2roB9myp");
 
-            var fullTracks = new List<FullTrack>();
-
             if (playlist == null || playlist.Tracks == null || playlist.Tracks.Items == null)
                 return [];
 
-            foreach (PlaylistTrack<IPlayableItem> item in playlist.Tracks.Items)
-                if (item.Track is FullTrack track && track != null)
-                    fullTracks.Add(track);
-
-            return fullTracks;
+            return playlist.Tracks.Items
+                .Where(item => item.Track is FullTrack)
+                .Take(30)
+                .Select(item => item.Track as FullTrack)
+                .Where(track => track != null)!;
         }
+
+        public async Task<FullTrack> GetFullTrackById(string id) =>
+            await client.Tracks.Get(id);
     }
 }
