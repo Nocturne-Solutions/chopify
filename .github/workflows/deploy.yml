@@ -15,4 +15,8 @@ jobs:
 
       - name: Ejecuta comandos SSH
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 'echo puto'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 '
+            cd /chopify
+            git pull origin franco-develop
+            docker-compose up -d
+          '
