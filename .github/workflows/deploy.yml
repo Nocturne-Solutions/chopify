@@ -16,4 +16,4 @@ jobs:
       - name: Deploy using SSH and Docker Compose
         shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no franco@192.168.30.11
+          ssh franco@192.168.30.11
