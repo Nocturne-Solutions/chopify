@@ -17,8 +17,8 @@ jobs:
         shell: powershell
         run: |
           $command = @"
-            cd /chopify
-            git pull origin franco-develop
+            cd /chopify \
+            git pull origin franco-develop \
             docker-compose up -d
           "@
 
