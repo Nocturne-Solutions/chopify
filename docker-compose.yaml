@@ -11,16 +11,16 @@ services:
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     ports:
-      - "8080:8080" # Ajusta según el puerto que use tu aplicación backend
+      - "8080:8080"
     depends_on:
       - mongo
 
   frontend:
     build:
-      context: ./front-end
+      context: ./front-end/docker
     container_name: frontend
     ports:
-      - "80:3000" # Ajusta según el puerto que use tu aplicación frontend
+      - "80:3000"
     depends_on:
       - backend
 
