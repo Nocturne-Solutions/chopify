@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, lc-access]
 
     steps:
       - name: Verifica el repositorio
