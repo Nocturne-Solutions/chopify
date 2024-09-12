@@ -8,7 +8,7 @@ COPY ../src /usr/share/nginx/html
 COPY ../config/nginx.conf /etc/nginx/nginx.conf
 
 # Copia el archivo de configuración adicional para el servidor
-COPY default.conf ../config/etc/nginx/conf.d/default.conf
+COPY ../config/default.conf /etc/nginx/conf.d/default.conf
 
 # Exponemos el puerto 3000 para que coincida con el puerto expuesto en Docker Compose
 EXPOSE 3000
