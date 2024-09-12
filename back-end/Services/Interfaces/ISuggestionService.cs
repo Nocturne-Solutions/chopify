@@ -4,8 +4,16 @@ namespace chopify.Services.Interfaces
 {
     public interface ISuggestionService
     {
+        enum ResultCodes
+        {
+            Success,
+            SongNotFound,
+            SongAlreadySuggested,
+            UserAlreadySuggested
+        }
+
         Task<IEnumerable<SuggestionReadDTO>> GetAllAsync();
 
-        Task<bool> SuggestSong(SuggestionUpsertDTO suggestion);
+        Task<ResultCodes> SuggestSong(SuggestionUpsertDTO suggestion);
     }
 }

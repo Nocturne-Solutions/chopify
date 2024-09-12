@@ -1,5 +1,4 @@
 ﻿using chopify.Models;
-using chopify.Services.Implementations;
 using chopify.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,10 +15,21 @@ namespace chopify.Controllers
         [Authorize]
         public async Task<IActionResult> SuggestSong(SuggestionUpsertDTO suggestion)
         {
-            if (await _suggestionService.SuggestSong(suggestion))
-                return Ok();
-            else
-                return Conflict(new { message = "No se pudo sugerir la canción debido a que ya fue sugerida o no es una canción valida." });
+            var result = await _suggestionService.SuggestSong(suggestion);
+
+            switch (result)
+            {
+                case ISuggestionService.ResultCodes.SongNotFound:
+                    return NotFound(new { message = "No se pudo sugerir la canción debido a que no se encontró la canción en Spotify." });
+                case ISuggestionService.ResultCodes.SongAlreadySuggested:
+                    return Conflict(new { message = "No se pudo sugerir la canción debido a que ya fue sugerida." });
+                case ISuggestionService.ResultCodes.UserAlreadySuggested:
+                    return Conflict(new { message = "No se pudo sugerir la canción debido a que ya fue sugerida por el usuario." });
+                case ISuggestionService.ResultCodes.Success:
+                    break;
+            }
+
+            return Ok(new { message = "Canción sugerida exitosamente." });
         }
 
         [HttpGet]

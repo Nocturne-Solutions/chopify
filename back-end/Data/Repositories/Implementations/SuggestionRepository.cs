@@ -19,5 +19,8 @@ namespace chopify.Data.Repositories.Implementations
 
             return await _collection.Find(filter).ToListAsync();
         }
+
+        public Task<Suggestion> GetByUserAsync(string user) =>
+            _collection.Find(x => x.SuggestedBy.Equals(user)).FirstOrDefaultAsync();
     }
 }

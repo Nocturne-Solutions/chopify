@@ -14,28 +14,28 @@ namespace chopify.Services.Implementations
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
         private readonly IMapper _mapper = mapper;
 
-        public async Task<bool> AddVoteAsync(VoteUpsertDTO vote)
+        public async Task<IVoteService.ResultCode> AddVoteAsync(VoteUpsertDTO vote)
         {
             await _voteSemaphore.WaitAsync();
             
             try
             {
-                var iAlreadyVote = await _voteRepository.GetByUserAsync(vote.User);
+                var _vote = await _voteRepository.GetByUserAsync(vote.User);
 
-                if (iAlreadyVote != null)
-                    return false;
+                if (_vote != null)
+                    return IVoteService.ResultCode.UserAlreadyVoted;
 
-                var sugestion = await _suggestionRepository.GetBySongIdAsync(vote.Id);
+                var suggestion = await _suggestionRepository.GetBySongIdAsync(vote.Id);
 
-                if (sugestion == null)
-                    return false;
+                if (suggestion == null)
+                    return IVoteService.ResultCode.SongNotSuggested;
 
-                sugestion.Votes += 1;
+                suggestion.Votes += 1;
 
                 await _voteRepository.CreateAsync(_mapper.Map<Vote>(vote));
-                await _suggestionRepository.UpdateAsync(sugestion.Id, sugestion);
+                await _suggestionRepository.UpdateAsync(suggestion.Id, suggestion);
 
-                return true;
+                return IVoteService.ResultCode.Success;
             }
             finally
             {
