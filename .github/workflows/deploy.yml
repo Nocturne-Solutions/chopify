@@ -17,9 +17,7 @@ jobs:
         shell: powershell
         run: |
           $command = @"
-            cd /chopify \
-            git pull origin franco-develop \
-            docker-compose up -d
+            cd /chopify && git pull origin franco-develop && docker-compose up -d
           "@
 
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 $command
