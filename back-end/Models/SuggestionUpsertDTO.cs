@@ -2,7 +2,7 @@
 
 namespace chopify.Models
 {
-    public class SuggestionDTO
+    public class SuggestionUpsertDTO
     {
         [Required(ErrorMessage = "La canción es obligatoria.")]
         public string SpotifySongId { get; set; } = string.Empty;

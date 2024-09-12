@@ -28,6 +28,7 @@ namespace chopify.External
         }
 
         public static SpotifyService Instance => _instance.Value;
+
         public async Task<IEnumerable<FullTrack>> FetchTracksAsync(string search, int limit = 15)
         {
             SearchRequest query = new(SearchRequest.Types.Track, search)

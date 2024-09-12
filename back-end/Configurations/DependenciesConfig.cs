@@ -12,10 +12,12 @@ namespace chopify.Configurations
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<ISongRepository, SongRepository>();
             services.AddTransient<ISuggestionRepository, SuggestionRepository>();
+            services.AddTransient<IVoteRepository, VoteRepository>();
 
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ISongService, SongService>();
             services.AddTransient<ISuggestionService, SuggestionService>();
+            services.AddTransient<IVoteService, VoteService>();
 
             return services;
         }

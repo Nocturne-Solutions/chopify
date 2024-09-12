@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using chopify.Data.Entities;
 using chopify.Models;
-using SpotifyAPI.Web;
 
 namespace chopify.Mappings
 {
@@ -9,8 +8,11 @@ namespace chopify.Mappings
     {
         public SuggestionMapper()
         {
-            CreateMap<SuggestionDTO, Suggestion>()
+            CreateMap<SuggestionUpsertDTO, Suggestion>()
                 .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => 1));
+
+            CreateMap<Suggestion, SuggestionReadDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.SpotifySongId));
         }
     }
 }

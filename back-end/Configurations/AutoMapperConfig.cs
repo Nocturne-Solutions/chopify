@@ -16,6 +16,7 @@ namespace chopify.Configurations
                 cfg.AddProfile<UserMapper>();
                 cfg.AddProfile<SongMapper>();
                 cfg.AddProfile<SuggestionMapper>();
+                cfg.AddProfile<VoteMapper>();
             });
         }
     }
