@@ -16,4 +16,3 @@ jobs:
       - name: Ejecuta comandos SSH
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deployer@192.168.30.11 'cd chopify && git pull && git checkout franco-develop && docker-compose up -d'
-          
