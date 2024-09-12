@@ -2,7 +2,7 @@
 FROM nginx:alpine
 
 # Copia el contenido del proyecto al directorio predeterminado de Nginx
-COPY ../src /usr/share/nginx/html
+COPY src /usr/share/nginx/html
 
 # Copia el archivo de configuración principal
 COPY config/nginx.conf /etc/nginx/nginx.conf
