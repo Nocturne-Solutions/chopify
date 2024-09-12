@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let debounceTimeout;
 
-    function updateSuggestions(li, suggestedBy)
+    function updateSuggestions(li, isSuggested, suggestedBy)
     {
         let name = li.getAttribute('data-song-name');
         let artists = li.getAttribute('data-song-artists');
         let coverUrl = li.getAttribute('data-song-cover-url');
 
-        li.classList.add('suggested');
+        li.classList.toggle('suggested', isSuggested);
 
         li.innerHTML = `
             <img src="${coverUrl}" alt="Cover" class="song-cover">
@@ -22,12 +22,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="song-name">${name}</div>
                 <div class="song-artists">${artists}</div>
             </div>
-            <div class="suggested-label">Ya fue sugerida por <span class="sugest-by">${suggestedBy}</span></div>`;
+            ${
+                isSuggested
+                    ? `<div class="suggested-label">Ya fue sugerida por <span class="sugest-by">${suggestedBy}</span></div>`
+                    : `
+                <button class="suggest-btn">
+                    <i class="fas fa-lightbulb"></i>
+                    <i class="fas fa-check"></i>
+                </button>
+            `}
+        `;
+
+        if (!isSuggested) {
+            const suggestButton = li.querySelector('.suggest-btn');
+            suggestButton.addEventListener('click', suggestItem);
+        }
     }
 
     function checkSuggestions()
     {
-        fetch(API_BASE_URL + '/song/suggestions', {
+        fetch(API_BASE_URL + '/suggestion', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -44,10 +58,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            songList.items.forEach(item => {
-                if (data.some(suggestion => suggestion.songId === item.id)) {
-                    let suggestedBy = data.find(suggestion => suggestion.songId === item.id).suggestedBy;
-                    updateSuggestions(item, suggestedBy);
+            songList.querySelectorAll('li').forEach(li => {
+                let songId = li.getAttribute('data-song-id');
+                let suggestion = data.find(suggestion => suggestion.id === songId);
+
+                if (suggestion && !li.classList.contains('suggested')) {
+                    updateSuggestions(li, true, suggestion.suggestedBy);
+                }
+                else if (!suggestion && li.classList.contains('suggested')) {
+                    updateSuggestions(li, false, '');
                 }
             });
         })
@@ -63,10 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const suggestIcon = suggestBtn.querySelector('.fa-lightbulb');
         const confirmIcon = suggestBtn.querySelector('.fa-check');
 
+        const spinner = document.createElement('div');
+        spinner.classList.add('suggest-spinner');
+
         if (suggestBtn.classList.contains('confirming')) {
             let songId = li.getAttribute('data-song-id');
 
-            fetch(API_BASE_URL + '/suggestion/suggest', {
+            clearTimeout(suggestTimeout);
+
+            suggestBtn.disabled = true;
+            searchInput.disabled = true;
+            document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+            suggestIcon.style.display = 'none';
+            confirmIcon.style.display = 'none';
+            suggestBtn.appendChild(spinner);
+
+            fetch(API_BASE_URL + '/suggestion', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -79,7 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('La sesión ha expirado o no has iniciado sesión.');
                     window.location.href = '../index.html';
                 } else if (response.status === 409) {
-                    alert('Otro usuario ya ha sugerido esta canción.');
+                    response.json().then(data => {
+                        alert(data.message);
+                    });
                 } else if (response.ok) {
                     window.location.href = '../pages/ranking.html';
                 } else {
@@ -87,9 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(error => {
+                spinner.remove();
+                suggestIcon.style.display = 'block';
+                confirmIcon.style.display = 'none';
+
+                suggestBtn.disabled = false;
+                searchInput.disabled = true;
+                document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+
+                suggestBtn.classList.remove('confirming');
+                suggestIcon.classList.remove('fade-out');
+                confirmIcon.classList.remove('fade-in');
+
                 console.error('Error al sugerir la canción:', error);
                 alert('Error al sugerir la canción. Inténtalo de nuevo más tarde.');
             });
+
+            return;
         }
 
         suggestBtn.classList.add('confirming');
@@ -175,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => {
             if (response.status === 401) {
                 alert('La sesión ha expirado o no has iniciado sesión.');
-                resetButtonAndSpinner();
+                hideSpinner();
                 window.location.href = '../index.html';
             } else if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
@@ -184,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            resetButtonAndSpinner();
+            hideSpinner();
 
             data.forEach(item => {
                 addSong(item.id, item.name, item.artist, item.coverUrl, item.isSuggested, item.suggestedBy);
@@ -196,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function resetButtonAndSpinner() {
+    function hideSpinner() {
         songList.style.display = 'block';
         loadingSpinner.style.display = 'none';
     }
@@ -208,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkSession();
 
-    //setInterval(checkSuggestions, 2000);
+    setInterval(checkSuggestions, 2000);
     
     filterSongs('');
 });
