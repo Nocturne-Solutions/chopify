@@ -15,8 +15,11 @@ function checkSession() {
       },
     })
       .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (response.status === 401) {
+            alert('La sesión ha expirado o no has iniciado sesión.');
+            window.location.href = '../index.html';
+        } else if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         return response.json();
@@ -28,7 +31,7 @@ function checkSession() {
         }
       })
       .catch(error => {
-        alert('Error validando sesión: ' + error.message);
-        window.location.href = '../index.html';
+        console.error('Error en la validación del token:', error);
+        checkSession();
       });
 }

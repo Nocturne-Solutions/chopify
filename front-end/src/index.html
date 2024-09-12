@@ -39,7 +39,7 @@
             caret-color: #ff7043;
         }
         .input-group .form-control::placeholder {
-            color: #d3d3d3; /* Gris claro para el hint */
+            color: #d3d3d3;
         }
         .input-group .form-control:focus {
             background-color: #2e2e2e;
@@ -50,7 +50,7 @@
         .input-group-text {
             background-color: #2e2e2e;
             border: 1px solid #575757;
-            color: #ff7043; /* Color del icono */
+            color: #ff7043;
         }
         .btn-primary {
             padding: 10px 20px;
@@ -77,15 +77,34 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ffffff; /* Título en blanco */
+            color: #ffffff;
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
             margin-bottom: 1.2rem;
-            margin-top: 0.5rem; /* Reducir el margen superior */
+            margin-top: 0.5rem;
             letter-spacing: 1px;
         }
         .title i {
             margin-right: 0.6rem;
             font-size: 2.2rem;
+        }
+        .custom-spinner {
+            cursor: wait;
+            display: none;
+            width: 2.7rem;
+            height: 2.7rem;
+            border: 0.4em solid rgba(255, 112, 67, 0.3); /* Borde semitransparente en todo el contorno */
+            border-left-color: #ff7043; /* Borde izquierdo naranja para crear la línea continua */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 8px rgba(255, 112, 67, 0.8); /* Sombra para un efecto brillante y suave */
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -95,11 +114,14 @@
             Chopify&nbsp;<img src="../assets/images/beer-icon.png" alt="Beer Icon" style="width: 36px; height: 36px;">
         </div>
         <form id="loginForm">
-            <div class="input-group mb-3">
+            <div class="input-group mb-3" id="textbox">
                 <span class="input-group-text"><i class="fas fa-user"></i></span>
                 <input type="text" class="form-control" id="name" placeholder="Nombre" required autocomplete="off" maxlength="32">
             </div>
-            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+            <button type="submit" class="btn btn-primary w-100" id="loginButton">Ingresar</button>
+            <div class="custom-spinner mx-auto" id="loadingSpinner">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -107,12 +129,18 @@
     <script src="components/config.js"></script>
     <script src="components/utils.js"></script>
     <script>
+        const loginButton = document.getElementById('loginButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const textboxName = document.getElementById('textbox');
+
         document.addEventListener('DOMContentLoaded', function() {
             const sessionToken = localStorage.getItem('sessionToken');
             const sessionExpiry = localStorage.getItem('sessionExpiry');
             const sessionUser = localStorage.getItem('sessionUser');
 
             if (sessionToken && sessionExpiry && sessionUser && new Date(sessionExpiry) > new Date()) {
+                showSpinner();
+                
                 fetch(API_BASE_URL + '/user/validate-token', {
                     method: 'POST',
                     headers: {
@@ -128,11 +156,13 @@
                     })
                     .then(data => {
                       if (data.valid) {
-                        window.location.href = 'pages/ranking.html'; // Redirigir a la siguiente página
+                          window.location.href = 'pages/ranking.html';
+                          resetButtonAndSpinner();
                       }
                     })
                     .catch(error => {
-                      alert('Error validando sesión: ' + error.message);
+                        console.error('Error en la validación del token:', error.message);
+                        resetButtonAndSpinner();
                     });
             }
         });
@@ -145,6 +175,7 @@
             if (name === '') {
                 alert('Por favor, ingrese su nombre.');
             } else {
+                showSpinner();
                 loginUser(name);
             }
         });
@@ -162,13 +193,33 @@
                   localStorage.setItem('sessionExpiry', data.expiry);
                   localStorage.setItem('sessionUser', data.username);
 
-                  window.location.href = 'pages/ranking.html'; // Redirigir a la siguiente página
+                  window.location.href = 'pages/ranking.html';
+
+                  resetButtonAndSpinner();
                 } else {
                   alert('Error en la validación del usuario.');
+                  resetButtonAndSpinner();
                 }
               })
-              .catch(error => console.error('Error en el login:', error));
-            }          
+              .catch(error => {
+                console.error('Error en la creación del usuario:', error.message);
+                alert('Error en la creación del usuario.');
+                resetButtonAndSpinner();
+              });
+        }
+
+        function resetButtonAndSpinner() {
+            loginButton.style.display = 'block';
+            textboxName.style.display = 'flex';
+            loadingSpinner.style.display = 'none';
+        }
+
+        function showSpinner() {
+            loginButton.style.display = 'none';
+            textboxName.style.display = 'none';
+            loadingSpinner.style.display = 'block';
+        }
+
     </script>
 </body>
 </html>

@@ -4,6 +4,8 @@ namespace chopify.Services.Interfaces
 {
     public interface ISuggestionService
     {
-        Task<bool> SuggestSong(SuggestionDTO suggestion);
+        Task<IEnumerable<SuggestionReadDTO>> GetAllAsync();
+
+        Task<bool> SuggestSong(SuggestionUpsertDTO suggestion);
     }
 }
