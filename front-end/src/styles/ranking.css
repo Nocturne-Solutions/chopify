@@ -129,7 +129,15 @@ body {
     justify-content: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#suggestBtn.show {
+    opacity: 1;
+    transform: scale(1);
 }
 
 #suggestBtn:hover {
@@ -143,6 +151,11 @@ body {
     font-weight: bold;
 }
 
+#suggestBtn.hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
 
 @media (max-width: 600px) {
     .container {
