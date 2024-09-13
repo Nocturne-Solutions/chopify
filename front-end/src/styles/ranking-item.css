@@ -107,14 +107,14 @@ li:hover {
     border-radius: 50%;
     left: 2%;
     right: 2%;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s ease;
     position: relative;
     overflow: hidden;
     font-size: 40px;
+    transition: background-color 0.3s, transform 0.3s ease;
 }
 
 .vote-btn:hover {
@@ -190,8 +190,8 @@ li:hover {
     display: none;
 }
 
-.hidden-vote-btn {
-    display: none;
+.vote-btn.show {
+    display: flex;
 }
 
 li.reorder {
@@ -210,6 +210,21 @@ li.reorder {
     }
 }
 
+@keyframes fadeOutToBottom {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
 .new-item {
     animation: fadeInFromBottom 0.5s ease-out;
+}
+
+.deleted-item {
+    animation: fadeOutToBottom 0.5s ease-out;
 }

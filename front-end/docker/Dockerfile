@@ -1,14 +1,14 @@
 # Usa una imagen base de Nginx
 FROM nginx:alpine
 
+# Elimina el contenido predeterminado de Nginx
+RUN rm -rf /usr/share/nginx/html
+
 # Copia el contenido del proyecto al directorio predeterminado de Nginx
-COPY /src /usr/share/nginx/html
+COPY src /usr/share/nginx/html
 
 # Copia el archivo de configuración principal
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copia el archivo de configuración adicional para el servidor
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY config/nginx.conf /etc/nginx/nginx.conf
 
 # Exponemos el puerto 3000 para que coincida con el puerto expuesto en Docker Compose
 EXPOSE 3000

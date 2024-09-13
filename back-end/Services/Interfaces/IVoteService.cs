@@ -4,7 +4,14 @@ namespace chopify.Services.Interfaces
 {
     public interface IVoteService
     {
+        enum ResultCode
+        {
+            Success,
+            UserAlreadyVoted,
+            SongNotSuggested
+        }
+
         Task<VoteReadDTO> GetByUserAsync(string user);
-        Task<bool> AddVoteAsync(VoteUpsertDTO vote);
+        Task<ResultCode> AddVoteAsync(VoteUpsertDTO vote);
     }
 }

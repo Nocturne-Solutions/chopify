@@ -17,13 +17,13 @@ namespace chopify.Services.Implementations
         private readonly IVoteRepository _voteRepository = voteRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
         private readonly IMapper _mapper = mapper;
-
-        public async Task<bool> SuggestSong(SuggestionUpsertDTO suggestionDto)
+ 
+        public async Task<ISuggestionService.ResultCodes> SuggestSong(SuggestionUpsertDTO suggestionDto)
         {
             var song = _mapper.Map<SongReadDTO>(await SpotifyService.Instance.GetFullTrackById(suggestionDto.SpotifySongId));
 
             if (song == null)
-                return false;
+                return ISuggestionService.ResultCodes.SongNotFound;
 
             await _suggestSemaphore.WaitAsync();
 
@@ -31,33 +31,36 @@ namespace chopify.Services.Implementations
             {
                 var suggestion = await _suggestionRepository.GetBySongIdAsync(suggestionDto.SpotifySongId);
 
-                if (suggestion == null)
+                if (suggestion != null)
+                    return ISuggestionService.ResultCodes.SongAlreadySuggested;
+
+                suggestion = await _suggestionRepository.GetByUserAsync(suggestionDto.SpotifySongId);
+
+                if (suggestion != null)
+                    return ISuggestionService.ResultCodes.UserAlreadySuggested;
+
+                var newSuggestion = new Suggestion
                 {
-                    var newSuggestion = new Suggestion
-                    {
-                        SpotifySongId = suggestionDto.SpotifySongId,
-                        Artist = song.Artist,
-                        Duration = song.Duration,
-                        CoverUrl = song.CoverUrl,
-                        FirstReleaseDate = song.FirstReleaseDate,
-                        Name = song.Name,
-                        Votes = 1,
-                        SuggestedBy = suggestionDto.SuggestedBy
-                    };
+                    SpotifySongId = suggestionDto.SpotifySongId,
+                    Artist = song.Artist,
+                    Duration = song.Duration,
+                    CoverUrl = song.CoverUrl,
+                    FirstReleaseDate = song.FirstReleaseDate,
+                    Name = song.Name,
+                    Votes = 1,
+                    SuggestedBy = suggestionDto.SuggestedBy
+                };
 
-                    var newVote = new Vote
-                    {
-                        SpotifySongId = suggestionDto.SpotifySongId,
-                        User = suggestionDto.SuggestedBy
-                    };
+                var newVote = new Vote
+                {
+                    SpotifySongId = suggestionDto.SpotifySongId,
+                    User = suggestionDto.SuggestedBy
+                };
 
-                    await _suggestionRepository.CreateAsync(newSuggestion);
-                    await _voteRepository.CreateAsync(newVote);
+                await _suggestionRepository.CreateAsync(newSuggestion);
+                await _voteRepository.CreateAsync(newVote);
 
-                    return true;
-                }
-                else
-                    return false;
+                return ISuggestionService.ResultCodes.Success;
             }
             finally
             {

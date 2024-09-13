@@ -8,6 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let debounceTimeout;
 
+    init();
+    
+    async function init() {
+        await checkSession();
+        filterSongs('');
+        setInterval(checkSuggestions, 2000);
+    }
+
     function updateSuggestions(li, isSuggested, suggestedBy)
     {
         let name = li.getAttribute('data-song-name');
@@ -110,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.status === 401) {
                     alert('La sesión ha expirado o no has iniciado sesión.');
                     window.location.href = '../index.html';
-                } else if (response.status === 409) {
+                } else if (response.status === 409 || response.status === 404) {
                     response.json().then(data => {
                         alert(data.message);
                     });
@@ -253,10 +261,4 @@ document.addEventListener('DOMContentLoaded', () => {
         songList.style.display = 'none';
         loadingSpinner.style.display = 'block';
     }
-
-    checkSession();
-
-    setInterval(checkSuggestions, 2000);
-    
-    filterSongs('');
 });

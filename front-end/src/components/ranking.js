@@ -11,6 +11,28 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedItem = null;
     let voteSongId = null;
 
+    init();
+
+    async function init() {
+        showSpinner();
+        await checkSession();
+        await GetVoteSongId();
+        refreshRanking();
+
+        setInterval(async function() {
+            await GetVoteSongId();
+            refreshRanking();
+        }, 5000);
+    }
+
+    suggestButton.addEventListener('click', function() {
+        window.location.href = 'suggestions.html';
+    });
+
+    document.querySelector('.user-label').textContent = username;
+
+    suggestButton.classList.add('hidden');
+
     function capturePositions() {
         const items = Array.from(songList.children);
         items.forEach(item => {
@@ -122,7 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 } else if (response.ok) {
                     voteSongId = songId;
-                    songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('hidden'));
+                    selectedItem = li;
+                    li.classList.add('song-voted');
+                    li.dataset.votes = parseInt(li.dataset.votes) + 1;
+                    totalVotes++;
+                    hideVoteButtons();
+                    hideSuggestButton();
+                    updateList();
                 } else {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -189,8 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
             </button>
         `;
 
-        if (voteSongId !== null) {
-            li.querySelector('.vote-btn').classList.add('hidden');
+        if (voteSongId === null) {
+            li.querySelector('.vote-btn').classList.add('show');
         }
 
         pendingItems.push(li);
@@ -240,6 +268,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         li.classList.remove('song-voted');
                     }
                 }
+                else {
+                    li.classList.add('deleted-item');
+                    setTimeout(() => {
+                        li.classList.remove('deleted-item');
+                        li.remove();
+                    }, 500);
+                }
             });
 
             data.forEach(suggestion => {
@@ -257,13 +292,39 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    suggestButton.addEventListener('click', function() {
-        window.location.href = 'suggestions.html';
-    });
+    async function GetVoteSongId()
+    {
+        const response = await fetch(API_BASE_URL + '/vote/' + encodeURIComponent(username), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (response.status === 401) {
+            alert('La sesión ha expirado o no has iniciado sesión.');
+            window.location.href = '../index.html';
+        } 
+        else if (response.status === 404) {
+            voteSongId = null;
+            showVoteButtons();
+            showSuggestButton();
+        }
+        else if (response.ok) {
+            const data = await response.json();
+            voteSongId = data.id;
+            hideVoteButtons();
+            hideSuggestButton();
+        }
+        else {
+            console.error('Error al obtener las sugerencias:', error.message);
+            await GetVoteSongId();
+        }
+    }
 
     function hideSpinner() {
-      	songList.style.display = 'block';
-      	loadingSpinner.style.display = 'none';
+        songList.style.display = 'block';
+        loadingSpinner.style.display = 'none';
     }
 
     function showSpinner() {
@@ -271,38 +332,23 @@ document.addEventListener('DOMContentLoaded', function () {
         loadingSpinner.style.display = 'block';
     }
 
-    function GetVoteSongId()
-    {
-        fetch(API_BASE_URL + '/vote/' + encodeURIComponent(username), {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-        })
-        .then(response => {
-            if (response.status === 401) {
-                alert('La sesión ha expirado o no has iniciado sesión.');
-                window.location.href = '../index.html';
-            } else if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            return response.json();
-        })
-        .then(data => {
-            songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('hidden'));
-            voteSongId = data.id;
-        })
-        .catch(error => {
-            console.error('Error al obtener las sugerencias:', error.message);
-            showSpinner();
-        });
+    function showSuggestButton() {
+        suggestButton.classList.remove('hidden');
+        suggestButton.classList.add('show');
     }
 
-    showSpinner();
-    checkSession();
-    GetVoteSongId();
-    setInterval(refreshRanking, 2000);
+    function hideSuggestButton() {
+        suggestButton.classList.add('hidden');
+        suggestButton.classList.remove('show');
+    }
 
-    document.querySelector('.user-label').textContent = username;
+    function showVoteButtons() {
+        songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('hidden'));
+        songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('show'));
+    }
+
+    function hideVoteButtons() {
+        songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.add('hidden'));
+        songList.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('show'));
+    }
 });

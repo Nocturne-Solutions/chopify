@@ -1,4 +1,4 @@
-name: Ejecutar SSH
+name: Full Deploy
 
 on:
   push:
@@ -6,20 +6,14 @@ on:
       - franco-develop
 
 jobs:
-  ssh:
-    runs-on: [self-hosted]
+  deploy:
+    runs-on: [self-hosted, lc-access]
 
     steps:
       - name: Verifica el repositorio
         uses: actions/checkout@v3
 
       - name: Ejecuta comandos SSH
-        shell: powershell
         run: |
-          $command = @"
-            cd /chopify
-            git pull origin franco-develop
-            docker-compose up -d
-          "@
-
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no franco@192.168.30.11 $command
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deployer@192.168.30.11 'cd chopify && git pull && git checkout franco-develop && docker-compose down && docker-compose build && docker-compose up -d'
+          
