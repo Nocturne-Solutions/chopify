@@ -7,7 +7,7 @@
     <title>Chopify</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="../assets/images/beer-icon.png" type="image/png">
+    <link rel="icon" href="assets/images/beer-icon.png" type="image/png">
     <style>
         body {
             display: flex;
@@ -15,7 +15,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-image: url('../assets/images/background.webp');
+            background-image: url('assets/images/background.webp');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -111,7 +111,7 @@
 <body>
     <div class="login-card">
         <div class="title text-center">
-            Chopify&nbsp;<img src="../assets/images/beer-icon.png" alt="Beer Icon" style="width: 36px; height: 36px;">
+            Chopify&nbsp;<img src="assets/images/beer-icon.png" alt="Beer Icon" style="width: 36px; height: 36px;">
         </div>
         <form id="loginForm">
             <div class="input-group mb-3" id="textbox">
@@ -194,8 +194,6 @@
                   localStorage.setItem('sessionUser', data.username);
 
                   window.location.href = 'pages/ranking.html';
-
-                  resetButtonAndSpinner();
                 } else {
                   alert('Error en la validación del usuario.');
                   resetButtonAndSpinner();
