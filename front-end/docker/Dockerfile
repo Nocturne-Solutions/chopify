@@ -4,6 +4,9 @@ FROM nginx:alpine
 # Copia el contenido del proyecto al directorio predeterminado de Nginx
 COPY src /usr/share/nginx/html
 
+# Copia las imágenes y los archivos de estilo al directorio de activos
+COPY assets /usr/share/nginx/html/assets
+
 # Copia el archivo de configuración principal
 COPY config/nginx.conf /etc/nginx/nginx.conf
 
