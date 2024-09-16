@@ -90,9 +90,7 @@ namespace chopify.Services.Implementations
                 if (_isActive)
                     return IVotingSystemService.ResultCode.IsActive;
 
-                _roundInProgress = false;
-
-                await _servicesLock.LockWriteAsync();
+                _roundCancellationTokenSource?.Cancel();
 
                 try
                 {
