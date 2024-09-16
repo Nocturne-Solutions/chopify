@@ -59,21 +59,12 @@ namespace chopify.Services.Implementations
                 if (!_isActive)
                     return IVotingSystemService.ResultCode.IsNotActive;
 
-                _roundInProgress = false;
+                _roundCancellationTokenSource?.Cancel();
 
-                await _servicesLock.LockWriteAsync();
+                _stateEndTime = null;
+                _isActive = false;
 
-                try
-                {
-                    _stateEndTime = null;
-                    _isActive = false;
-
-                    return IVotingSystemService.ResultCode.Success;
-                }
-                finally
-                {
-                    _servicesLock.UnlockWrite();
-                }        
+                return IVotingSystemService.ResultCode.Success;
             }
             finally
             {
@@ -90,23 +81,10 @@ namespace chopify.Services.Implementations
                 if (_isActive)
                     return IVotingSystemService.ResultCode.IsActive;
 
-                _roundCancellationTokenSource?.Cancel();
+                await _voteRepository.DeleteAllAsync();
+                await _suggestionRepository.DeleteAllAsync();
 
-                try
-                {
-                    _isActive = false;
-                    _stateEndTime = null;
-                    _currentRound = 0;
-
-                    await _voteRepository.DeleteAllAsync();
-                    await _suggestionRepository.DeleteAllAsync();
-
-                    return IVotingSystemService.ResultCode.Success;
-                }
-                finally
-                {
-                    _servicesLock.UnlockWrite();
-                }
+                return IVotingSystemService.ResultCode.Success;
             }
             finally
             {
