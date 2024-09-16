@@ -10,26 +10,36 @@ document.addEventListener('DOMContentLoaded', function () {
     let voteTimeout;
     let selectedItem = null;
     let voteSongId = null;
+    let status;
 
     init();
 
     async function init() {
         showSpinner();
-        await checkSession();
+        checkSession();
+        status = await checkStatus();
+        if (status.state !== STATES.VOTING) {
+            window.location.href = 'winner.html';
+        }
         await GetVoteSongId();
         refreshRanking();
 
         setInterval(async function() {
             await GetVoteSongId();
             refreshRanking();
-        }, 5000);
+            status = await checkStatus();
+            if (status.state !== STATES.VOTING) {
+                window.location.href = 'winner.html';
+            }
+            document.querySelector('.timer-label').textContent = secondsToMMSS(status.currentStateRemainingTimeSeconds);
+        }, 1000);
     }
 
     suggestButton.addEventListener('click', function() {
         window.location.href = 'suggestions.html';
     });
 
-    document.querySelector('.user-label').textContent = username;
+    document.querySelector('.user-label').textContent = username || 'Desconocido';
 
     suggestButton.classList.add('hidden');
 
@@ -294,34 +304,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function GetVoteSongId()
     {
-        const response = await fetch(API_BASE_URL + '/vote/' + encodeURIComponent(username), {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-        });
-
-        if (response.status === 401) {
-            alert('La sesión ha expirado o no has iniciado sesión.');
-            window.location.href = '../index.html';
-        } 
-        else if (response.status === 404) {
-            voteSongId = null;
-            showVoteButtons();
-            showSuggestButton();
+        try
+        {
+            const response = await fetch(API_BASE_URL + '/vote/' + encodeURIComponent(username), {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+    
+            if (response.status === 401) {
+                alert('La sesión ha expirado o no has iniciado sesión.');
+                window.location.href = '../index.html';
+            } 
+            else if (response.status === 204) {
+                voteSongId = null;
+                showVoteButtons();
+                showSuggestButton();
+            }
+            else if (response.ok) {
+                const data = await response.json();
+                voteSongId = data.id;
+                hideVoteButtons();
+                hideSuggestButton();
+            }
+            else {
+                console.error('Error al obtener las sugerencias:', error.message);
+                await GetVoteSongId();
+            }
         }
-        else if (response.ok) {
-            const data = await response.json();
-            voteSongId = data.id;
-            hideVoteButtons();
-            hideSuggestButton();
-        }
-        else {
+        catch (error)
+        {
             console.error('Error al obtener las sugerencias:', error.message);
-            await GetVoteSongId();
+            window.location.href = 'winner.html';
         }
     }
-
+    
     function hideSpinner() {
         songList.style.display = 'block';
         loadingSpinner.style.display = 'none';

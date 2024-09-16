@@ -7,13 +7,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('sessionUser');
 
     let debounceTimeout;
+    let status;
 
     init();
     
     async function init() {
-        await checkSession();
+        checkSession();
+        status = await checkStatus();
+        if (status.state !== STATES.VOTING) {
+            window.location.href = 'winner.html';
+        }
         filterSongs('');
-        setInterval(checkSuggestions, 2000);
+        setInterval(async function() {
+            checkSuggestions();
+            status = await checkStatus();
+            if (status.state !== STATES.VOTING) {
+                window.location.href = 'winner.html';
+            }
+        }, 1000);
     }
 
     function updateSuggestions(li, isSuggested, suggestedBy)
