@@ -9,7 +9,8 @@ namespace chopify.Services.Interfaces
             Success,
             SongNotFound,
             SongAlreadySuggested,
-            UserAlreadySuggested
+            UserAlreadySuggested,
+            NoRoundInProgress
         }
 
         Task<IEnumerable<SuggestionReadDTO>> GetAllAsync();

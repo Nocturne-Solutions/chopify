@@ -23,6 +23,8 @@ namespace chopify.Controllers
                     return Conflict(new { message = "No se pudo emitir el voto debido a que el usuario ya emitio un voto." });
                 case IVoteService.ResultCode.SongNotSuggested:
                     return Conflict(new { message = "No se pudo emitir el voto debido a que la canción que se quiere votar no fue sugerida." });
+                case IVoteService.ResultCode.NoRoundInProgress:
+                    return BadRequest(new { message = "No se pudo emitir el voto debido a que no hay una ronda en curso." });
                 case IVoteService.ResultCode.Success:
                     break;
             }
@@ -37,7 +39,7 @@ namespace chopify.Controllers
             var vote = await _voteService.GetByUserAsync(user);
 
             if (vote == null)
-                return NotFound();
+                return NoContent();
 
             return Ok(vote);
         }

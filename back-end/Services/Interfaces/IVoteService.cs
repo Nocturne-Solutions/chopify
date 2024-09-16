@@ -8,7 +8,8 @@ namespace chopify.Services.Interfaces
         {
             Success,
             UserAlreadyVoted,
-            SongNotSuggested
+            SongNotSuggested,
+            NoRoundInProgress
         }
 
         Task<VoteReadDTO> GetByUserAsync(string user);

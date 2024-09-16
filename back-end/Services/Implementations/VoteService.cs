@@ -6,16 +6,20 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class VoteService(IVoteRepository voteRepository, ISuggestionRepository suggestionRepository, IMapper mapper) : IVoteService
+    public class VoteService(IVoteRepository voteRepository, ISuggestionRepository suggestionRepository, IVotingSystemService votingRoundService, IMapper mapper) : IVoteService
     {
         private static readonly SemaphoreSlim _voteSemaphore = new(1, 1);
 
         private readonly IVoteRepository _voteRepository = voteRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
+        private readonly IVotingSystemService _votingRoundService = votingRoundService;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IVoteService.ResultCode> AddVoteAsync(VoteUpsertDTO vote)
         {
+            if (!await _votingRoundService.Lock())
+                return IVoteService.ResultCode.NoRoundInProgress;
+
             await _voteSemaphore.WaitAsync();
             
             try
@@ -30,15 +34,18 @@ namespace chopify.Services.Implementations
                 if (suggestion == null)
                     return IVoteService.ResultCode.SongNotSuggested;
 
-                suggestion.Votes += 1;
+                var voteEntity = _mapper.Map<Vote>(vote);
 
-                await _voteRepository.CreateAsync(_mapper.Map<Vote>(vote));
-                await _suggestionRepository.UpdateAsync(suggestion.Id, suggestion);
+                voteEntity.VoteRoundNumber = await _votingRoundService.GetCurrentRoundNumber();
+
+                await _voteRepository.CreateAsync(voteEntity);
+                await _suggestionRepository.AddOrRemoveVotesAsync(vote.Id, 1);
 
                 return IVoteService.ResultCode.Success;
             }
             finally
             {
+                await _votingRoundService.Unlock();
                 _voteSemaphore.Release();
             }
         }

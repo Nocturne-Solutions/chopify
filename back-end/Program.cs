@@ -1,4 +1,5 @@
 using chopify.Configurations;
+using chopify.External;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
@@ -34,6 +35,9 @@ if (string.IsNullOrWhiteSpace(jwtSecretKey))
 
 // Register IMongoClient using the connection string from the environment variable
 builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));
+
+// Register the SpotifyService as a singleton
+builder.Services.AddSingleton(SpotifyService.Instance);
 
 // Register the database name in the settings (you can modify MongoDBSettings if necessary)
 builder.Services.Configure<MongoDBSettings>(options =>

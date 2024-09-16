@@ -13,5 +13,8 @@ namespace chopify.Data.Entities
 
         [BsonElement("User")]
         public string User { get; set; } = string.Empty;
+
+        [BsonElement("VoteRoundNumber")]
+        public int VoteRoundNumber { get; set; }
     }
 }

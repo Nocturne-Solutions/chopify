@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using chopify.Data.Entities;
 using chopify.Mappings;
 
 namespace chopify.Configurations
@@ -17,6 +18,7 @@ namespace chopify.Configurations
                 cfg.AddProfile<SongMapper>();
                 cfg.AddProfile<SuggestionMapper>();
                 cfg.AddProfile<VoteMapper>();
+                cfg.AddProfile<WinnerMapper>();
             });
         }
     }

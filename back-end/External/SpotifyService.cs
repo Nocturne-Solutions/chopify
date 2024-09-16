@@ -58,6 +58,13 @@ namespace chopify.External
                 .Where(track => track != null)!;
         }
 
+        public async Task<FullTrack> GetRandomTrackAsync()
+        {
+            var tracks = await GetMostPopularTracksArgentinaAsync();
+
+            return tracks.ElementAt(new Random().Next(tracks.Count()));
+        }
+
         public async Task<FullTrack> GetFullTrackById(string id) =>
             await client.Tracks.Get(id);
     }

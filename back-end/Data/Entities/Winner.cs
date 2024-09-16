@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace chopify.Data.Entities
 {
-    public class Suggestion : IEntity
+    public class Winner : IEntity
     {
         [BsonId]
         public ObjectId Id { get; set; }
@@ -21,18 +21,21 @@ namespace chopify.Data.Entities
         public string FirstReleaseDate { get; set; } = string.Empty;
 
         [BsonElement("Duration")]
-        public TimeSpan? Duration { get; set; }
+        public TimeSpan Duration { get; set; }
 
         [BsonElement("CoverUrl")]
         public string CoverUrl { get; set; } = string.Empty;
 
         [BsonElement("SuggestedBy")]
         public string SuggestedBy { get; set; } = string.Empty;
-        
-        [BsonElement("Votes")]
-        public int Votes {  get; set; }
 
-        [BsonElement("SuggestedRoundNumber")]
-        public int SuggestedRoundNumber { get; set; }
+        [BsonElement("Votes")]
+        public int Votes { get; set; }
+
+        [BsonElement("RoundNumber")]
+        public int RoundNumber { get; set; }
+
+        [BsonElement("CreatedAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

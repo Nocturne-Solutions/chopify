@@ -38,7 +38,16 @@ namespace chopify.Controllers
             if (string.IsNullOrWhiteSpace(jwtSecretKey))
                 throw new ArgumentNullException("JWT_SECRET_KEY enviroment is not properly configured.");
 
-            var asignName = await _userService.CreateAsync(model);
+            string asignName = string.Empty;
+
+            try
+            {
+                asignName = await _userService.CreateAsync(model);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(jwtSecretKey);

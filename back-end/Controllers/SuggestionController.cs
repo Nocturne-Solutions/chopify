@@ -25,6 +25,8 @@ namespace chopify.Controllers
                     return Conflict(new { message = "No se pudo sugerir la canción debido a que ya fue sugerida." });
                 case ISuggestionService.ResultCodes.UserAlreadySuggested:
                     return Conflict(new { message = "No se pudo sugerir la canción debido a que ya fue sugerida por el usuario." });
+                case ISuggestionService.ResultCodes.NoRoundInProgress:
+                    return BadRequest(new { message = "No se pudo sugerir la canción debido a que no hay una ronda en curso." });
                 case ISuggestionService.ResultCodes.Success:
                     break;
             }

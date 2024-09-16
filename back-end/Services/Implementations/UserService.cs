@@ -19,6 +19,9 @@ namespace chopify.Services.Implementations
 
         public async Task<string> CreateAsync(UserUpsertDTO dto)
         {
+            if (dto.Name.Contains("sistema", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("El nombre no puede contener la palabra 'sistema'.", nameof(dto.Name));
+
             await _createSemaphore.WaitAsync();
 
             try
