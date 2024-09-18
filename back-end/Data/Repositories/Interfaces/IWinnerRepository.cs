@@ -9,5 +9,7 @@ namespace chopify.Data.Repositories.Interfaces
         Task<Winner> GetBySongIdAsync(string songId);
 
         Task<Winner> GetLastAsync();
+
+        Task DeleteAllExpiredAsync();
     }
 }

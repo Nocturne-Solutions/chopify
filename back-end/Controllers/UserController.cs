@@ -41,7 +41,8 @@ namespace chopify.Controllers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new(ClaimTypes.Name, asignName)
+                    new(ClaimTypes.Name, asignName),
+                    new(ClaimTypes.Role, "user")
                 }),
                 Expires = DateTime.UtcNow.AddHours(12), // Tiempo de expiración del token
                 Issuer = "chopify.com.ar",

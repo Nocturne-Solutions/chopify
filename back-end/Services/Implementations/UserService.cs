@@ -14,7 +14,6 @@ namespace chopify.Services.Implementations
         private static readonly string[] invalidNames = ["admin", "administrador", "administradora", "sistema", "system"];
 
         private static readonly SemaphoreSlim _createSemaphore = new(1, 1);
-        private static readonly SemaphoreSlim _updateSemaphore = new(1, 1);
 
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IMapper _mapper = mapper;
@@ -37,7 +36,8 @@ namespace chopify.Services.Implementations
                 {
                     Name = dto.Name,
                     NormalizedName = normalizeName,
-                    Tag = tag + 1
+                    Tag = tag + 1,
+                    ExpireAt = DateTime.UtcNow + TimeSpan.FromHours(12)
                 };
 
                 await _userRepository.CreateAsync(newUser);
@@ -48,66 +48,6 @@ namespace chopify.Services.Implementations
             {
                 _createSemaphore.Release();
             }
-        }
-
-        public async Task DeleteAsync(string id)
-        {
-            if (!ObjectId.TryParse(id, out var objectId))
-                throw new ArgumentException("El formato del ID no es válido.", nameof(id));
-
-            await _userRepository.DeleteAsync(objectId);
-        }
-
-        public async Task<IEnumerable<UserReadDTO>> GetAllAsync()
-        {
-            var entities = await _userRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<UserReadDTO>>(entities);
-        }
-
-        public async Task<UserReadDTO> GetByIdAsync(string id)
-        {
-            if (!ObjectId.TryParse(id, out var objectId))
-                throw new ArgumentException("El formato del ID no es válido.", nameof(id));
-
-            var entity = await _userRepository.GetByIdAsync(objectId);
-
-            return _mapper.Map<UserReadDTO>(entity);
-        }
-
-        public async Task<string> UpdateAsync(string id, UserUpsertDTO dto)
-        {
-            if (!ObjectId.TryParse(id, out var objectId))
-                throw new ArgumentException("El formato del ID no es válido.");
-
-            var normalizedName = NormalizeName(dto.Name);
-
-            if (invalidNames.Contains(normalizedName))
-                throw new ArgumentException($"El nombre no puede contener la palabra '{normalizedName}'.");
-
-            var user = await _userRepository.GetByIdAsync(objectId);
-
-            if (user == null)
-                throw new KeyNotFoundException($"No se encontró ningún documento con el ID '{id}'.");
-
-            await _updateSemaphore.WaitAsync();
-
-            try
-            {
-                var normalizeName = NormalizeName(dto.Name);
-                var tag = await _userRepository.GetLastTagByNormalizedName(normalizeName);
-
-                user.Name = dto.Name;
-                user.NormalizedName = normalizeName;
-                user.Tag = tag + 1;
-
-                await _userRepository.UpdateAsync(objectId, user);
-
-                return string.Concat(user.Name, "#", user.Tag);
-            }
-            finally
-            {
-                _updateSemaphore.Release();
-            }           
         }
 
         private static string NormalizeName(string name)

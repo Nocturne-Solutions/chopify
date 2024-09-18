@@ -16,5 +16,8 @@ namespace chopify.Data.Entities
 
         [BsonElement("Tag")]
         public int Tag { get; set; }
+
+        [BsonElement("ExpireAt")]
+        public DateTime ExpireAt { get; set; }
     }
 }

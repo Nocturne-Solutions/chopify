@@ -36,6 +36,9 @@ namespace chopify.Data.Entities
         public int RoundNumber { get; set; }
 
         [BsonElement("CreatedAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [BsonElement("ExpireAt")]
+        public DateTime ExpireAt { get; set; }
     }
 }

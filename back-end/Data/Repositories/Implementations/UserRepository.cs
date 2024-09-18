@@ -22,5 +22,8 @@ namespace chopify.Data.Repositories.Implementations
 
             return userWithLastTag.Tag;
         }
+
+        public async Task DeleteAllExpiredAsync() =>
+            await _collection.DeleteManyAsync(Builders<User>.Filter.Lt(x => x.ExpireAt, DateTime.UtcNow));
     }
 }

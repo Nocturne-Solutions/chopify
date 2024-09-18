@@ -18,5 +18,8 @@ namespace chopify.Data.Repositories.Implementations
 
         public async Task<Winner> GetLastAsync() =>
             await _collection.Find(_ => true).SortByDescending(x => x.CreatedAt).FirstOrDefaultAsync();
+
+        public async Task DeleteAllExpiredAsync() =>
+            await _collection.DeleteManyAsync(Builders<Winner>.Filter.Lt(x => x.ExpireAt, DateTime.UtcNow));
     }
 }

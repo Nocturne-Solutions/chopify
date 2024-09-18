@@ -14,6 +14,7 @@ namespace chopify.Services.Implementations
         private static readonly AsyncReaderWriterLock _servicesLock = new();
 
         private static readonly TimeSpan _cooldownDuration = TimeSpan.FromHours(1);
+        private static readonly TimeSpan _expiredWinners = TimeSpan.FromHours(12);
         private static bool _isActive = false;
         private static bool _roundInProgress = false;
         private static int _currentRound = 0;
@@ -263,7 +264,7 @@ namespace chopify.Services.Implementations
             return winner.Duration;
         }
 
-        private async Task<Winner?> TakeRandomWinner()
+        private async Task<Winner> TakeRandomWinner()
         {
             SongReadDTO? randomWinner;
 
@@ -283,6 +284,8 @@ namespace chopify.Services.Implementations
 
         private async Task RegisterWinner(Winner winner)
         {
+            winner.ExpireAt = DateTime.UtcNow.Add(_expiredWinners);
+
             await _winnerRepository.CreateAsync(winner);
             await _cooldownRepository.CreateAsync(new Cooldown
             {
