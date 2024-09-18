@@ -227,14 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
         li.classList.toggle('inCooldown', song.isInCooldown);
         li.setAttribute('data-song-id', song.id);
         li.setAttribute('data-song-name', song.name);
-        li.setAttribute('data-song-artists', song.artists);
+        li.setAttribute('data-song-artists', song.artist);
         li.setAttribute('data-song-cover-url', song.coverUrl);
 
         li.innerHTML = `
             <img src="${song.coverUrl}" alt="Cover" class="song-cover">
             <div class="song-details">
                 <div class="song-name">${song.name}</div>
-                <div class="song-artists">${song.artists}</div>
+                <div class="song-artists">${song.artist}</div>
             </div>
             ${
                 song.isInCooldown

@@ -48,11 +48,6 @@ body {
     color: #ff7043; /* Color del icono */
 }
 
-.user-container:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); /* Efecto hover ligero para sutilmente destacar */
-}
-
 .user-label {
     color: #ff7043; /* Mantiene un contraste adecuado con el fondo oscuro */
 }
