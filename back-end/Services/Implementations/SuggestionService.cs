@@ -8,7 +8,7 @@ using chopify.Services.Interfaces;
 namespace chopify.Services.Implementations
 {
     public class SuggestionService(ISongRepository songRepository, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, 
-                                  IVotingSystemService votingRoundService, IMapper mapper) : ISuggestionService
+                                  IVotingSystemService votingRoundService, ICooldownRepository cooldownRepository, IMapper mapper) : ISuggestionService
     {
         private static readonly SemaphoreSlim _suggestSemaphore = new(1, 1);
 
@@ -16,6 +16,7 @@ namespace chopify.Services.Implementations
         private readonly IVoteRepository _voteRepository = voteRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
         private readonly IVotingSystemService _votingRoundService = votingRoundService;
+        private readonly ICooldownRepository _cooldownRepository = cooldownRepository;
         private readonly IMapper _mapper = mapper;
  
         public async Task<ISuggestionService.ResultCodes> SuggestSong(SuggestionUpsertDTO suggestionDto)
@@ -32,6 +33,11 @@ namespace chopify.Services.Implementations
 
             try
             {
+                var cooldown = await _cooldownRepository.GetBySongIdAsync(suggestionDto.SpotifySongId);
+
+                if (cooldown != null)
+                    return ISuggestionService.ResultCodes.SongInCooldown;
+
                 var suggestion = await _suggestionRepository.GetBySongIdAsync(suggestionDto.SpotifySongId);
 
                 if (suggestion != null)
@@ -58,7 +64,8 @@ namespace chopify.Services.Implementations
                 var newVote = new Vote
                 {
                     SpotifySongId = suggestionDto.SpotifySongId,
-                    User = suggestionDto.SuggestedBy
+                    User = suggestionDto.SuggestedBy,
+                    VoteRoundNumber = newSuggestion.SuggestedRoundNumber
                 };
 
                 await _suggestionRepository.CreateAsync(newSuggestion);

@@ -14,6 +14,7 @@ namespace chopify.Configurations
             services.AddTransient<ISuggestionRepository, SuggestionRepository>();
             services.AddTransient<IVoteRepository, VoteRepository>();
             services.AddTransient<IWinnerRepository, WinnerRepository>();
+            services.AddTransient<ICooldownRepository, CooldownRepository>();
 
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ISongService, SongService>();
@@ -21,6 +22,7 @@ namespace chopify.Configurations
             services.AddTransient<IVoteService, VoteService>();
             services.AddTransient<IVotingSystemService, VotingSystemService>();
             services.AddTransient<IWinnerService, WinnerService>();
+            services.AddTransient<ICooldownService, CooldownService>();
 
             return services;
         }

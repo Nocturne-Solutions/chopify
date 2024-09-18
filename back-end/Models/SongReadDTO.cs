@@ -17,5 +17,9 @@
         public bool IsSuggested { get; set; } = false;
 
         public string SuggestedBy {  get; set; } = string.Empty;
+
+        public bool IsInCooldown { get; set; } = false;
+
+        public double CooldownTimeLeft { get; set; }
     }
 }

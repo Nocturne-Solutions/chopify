@@ -195,15 +195,11 @@
 
                   window.location.href = 'pages/ranking.html';
                 } else {
-                  alert('Error en la validación del usuario.');
-                  resetButtonAndSpinner();
+                    console.error('Error en la creación del usuario:', data.error);
+                    alert(data.error);
+                    resetButtonAndSpinner();
                 }
               })
-              .catch(error => {
-                console.error('Error en la creación del usuario:', error.message);
-                alert('Error en la creación del usuario.');
-                resetButtonAndSpinner();
-              });
         }
 
         function resetButtonAndSpinner() {

@@ -24,7 +24,8 @@ namespace chopify.Data.Repositories.Implementations
                                                   Builders<Suggestion>.Filter.Eq(s => s.SpotifySongId, pair.Key),
                                                   Builders<Suggestion>.Update.Inc(s => s.Votes, pair.Value)));
 
-            await _collection.BulkWriteAsync(updates);
+            if (updates.Any())
+                await _collection.BulkWriteAsync(updates);
         }
 
         public async Task DeleteAllAsync() =>

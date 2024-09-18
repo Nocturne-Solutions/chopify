@@ -6,10 +6,11 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class SongService(ISongRepository songRepository, ISuggestionRepository suggestionRepository, IMapper mapper) : ISongService
+    public class SongService(ISongRepository songRepository, ISuggestionRepository suggestionRepository, ICooldownRepository cooldownRepository, IMapper mapper) : ISongService
     {
         private readonly ISongRepository _songRepository = songRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
+        private readonly ICooldownRepository _cooldownRepository = cooldownRepository;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<SongReadDTO>> FetchAsync(string search)
@@ -19,7 +20,10 @@ namespace chopify.Services.Implementations
             if (result == null || !result.Any())
                 return [];
 
-            return await MarkSuggesteds(result);
+            var suggestedMarked = await MarkSuggesteds(result);
+            var inCooldownMarked = await MarkInCooldowns(suggestedMarked);
+
+            return inCooldownMarked;
         }
 
         public async Task<IEnumerable<SongReadDTO>> GetMostPopularSongsArgentinaAsync()
@@ -29,7 +33,10 @@ namespace chopify.Services.Implementations
             if (mostPopularSongs == null || !mostPopularSongs.Any())
                 return [];
 
-            return await MarkSuggesteds(mostPopularSongs);
+            var suggestedMarked = await MarkSuggesteds(mostPopularSongs);
+            var inCooldownMarked = await MarkInCooldowns(suggestedMarked);
+
+            return inCooldownMarked;
         }
 
         private async Task<IEnumerable<SongReadDTO>> MarkSuggesteds(IEnumerable<SongReadDTO> songs)
@@ -47,6 +54,27 @@ namespace chopify.Services.Implementations
                 {
                     song.IsSuggested = true;
                     song.SuggestedBy = suggestion.SuggestedBy;
+                }
+            }
+
+            return songs;
+        }
+
+        private async Task<IEnumerable<SongReadDTO>> MarkInCooldowns(IEnumerable<SongReadDTO> songs)
+        {
+            var cooldowns = await _cooldownRepository.GetBySongIdsAsync(songs.Select(song => song.Id));
+
+            if (cooldowns == null || !cooldowns.Any())
+                return songs;
+
+            var cooldownDict = cooldowns.ToDictionary(c => c.SpotifySongId);
+
+            foreach (var song in songs)
+            {
+                if (cooldownDict.TryGetValue(song.Id, out var cooldown))
+                {
+                    song.IsInCooldown = true;
+                    song.CooldownTimeLeft = (cooldown.CooldownEnd - DateTime.UtcNow).TotalSeconds;
                 }
             }
 

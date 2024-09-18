@@ -8,22 +8,26 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class VotingSystemService(ILogger<VotingSystemService> logger, IMapper mapper, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, IWinnerRepository winnerRepository) : IVotingSystemService
+    public class VotingSystemService(ILogger<VotingSystemService> logger, Scheduler scheduler, IMapper mapper, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, IWinnerRepository winnerRepository, ICooldownRepository cooldownRepository) : IVotingSystemService
     {
         private static readonly AsyncReaderWriterLock _lock = new();
         private static readonly AsyncReaderWriterLock _servicesLock = new();
 
+        private static readonly TimeSpan _cooldownDuration = TimeSpan.FromHours(1);
         private static bool _isActive = false;
         private static bool _roundInProgress = false;
         private static int _currentRound = 0;
         private static DateTime? _stateEndTime;
-        private static CancellationTokenSource? _roundCancellationTokenSource;
+        private static Guid _roundTask;
+        private static Guid _roundCooldownTask;
 
         private readonly ILogger<VotingSystemService> _logger = logger;
+        private readonly Scheduler _scheduler = scheduler;
         private readonly IMapper _mapper = mapper;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
         private readonly IVoteRepository _voteRepository = voteRepository;
         private readonly IWinnerRepository _winnerRepository = winnerRepository;
+        private readonly ICooldownRepository _cooldownRepository = cooldownRepository;
 
         public async Task<IVotingSystemService.ResultCode> Start()
         {
@@ -36,9 +40,12 @@ namespace chopify.Services.Implementations
 
                 _isActive = true;
 
-                Winner winner = await TakeRandomWinner();
+                Winner? winner = await TakeRandomWinner();
 
-                await _winnerRepository.CreateAsync(winner);
+                if (winner == null)
+                    return IVotingSystemService.ResultCode.FailToGetFirstSong;
+
+                await RegisterWinner(winner);
 
                 await StartVotingRound(winner.Duration - TimeSpan.FromSeconds(30));
 
@@ -59,8 +66,10 @@ namespace chopify.Services.Implementations
                 if (!_isActive)
                     return IVotingSystemService.ResultCode.IsNotActive;
 
-                _roundCancellationTokenSource?.Cancel();
+                _scheduler.CancelTask(_roundTask);
+                _scheduler.CancelTask(_roundCooldownTask);
 
+                _roundInProgress = false;
                 _stateEndTime = null;
                 _isActive = false;
 
@@ -83,6 +92,7 @@ namespace chopify.Services.Implementations
 
                 await _voteRepository.DeleteAllAsync();
                 await _suggestionRepository.DeleteAllAsync();
+                await _cooldownRepository.DeleteAllAsync();
 
                 return IVotingSystemService.ResultCode.Success;
             }
@@ -159,63 +169,6 @@ namespace chopify.Services.Implementations
             }
         }
 
-        private async Task RoundHandler(TimeSpan duration)
-        {
-            _roundCancellationTokenSource = new CancellationTokenSource();
-
-            try
-            {
-                await Task.Delay(duration, _roundCancellationTokenSource.Token);
-            }
-            finally
-            {
-                await _lock.LockWriteAsync();
-
-                _roundInProgress = false;
-
-                await _servicesLock.LockWriteAsync();
-
-                try
-                {
-                    if (_roundCancellationTokenSource.IsCancellationRequested)
-                        await CancelVotingRound();
-                    else
-                    {
-                        _roundCancellationTokenSource = new CancellationTokenSource();
-
-                        var winner = await EndVotingRound();
-
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                _stateEndTime = DateTime.UtcNow.Add(TimeSpan.FromSeconds(30));
-
-                                await Task.Delay(TimeSpan.FromSeconds(30), _roundCancellationTokenSource.Token);
-
-                                await _lock.LockWriteAsync();
-
-                                try
-                                {
-                                    await StartVotingRound(winner.Duration - TimeSpan.FromSeconds(30));
-                                }
-                                finally
-                                {
-                                    _lock.UnlockWrite();
-                                }
-                            }
-                            catch (OperationCanceledException) { }
-                        });
-                    }
-                }
-                finally
-                {
-                    _servicesLock.UnlockWrite();
-                    _lock.UnlockWrite();
-                }
-            }
-        }
-
         private async Task StartVotingRound(TimeSpan duration)
         {
             _currentRound = await _winnerRepository.GetLastRoundNumberAsync() + 1;
@@ -224,41 +177,47 @@ namespace chopify.Services.Implementations
 
             _logger.LogInformation($"Comenzando la ronda {_currentRound} con duración de {duration.TotalSeconds} segundos.");
 
-            _ = Task.Run(async () => await RoundHandler(duration));
+            _roundTask = _scheduler.AddTask(async () => await RoundEnding(), duration, async () => await RoundCancel());
         }
 
-        private async Task<Winner> EndVotingRound()
+        private async Task RoundEnding()
         {
-            _logger.LogInformation($"Finalizando la ronda {_currentRound}.");
+            await _lock.LockWriteAsync();
 
-            var topN = await _suggestionRepository.GetTopNAsync(10);
+            _roundInProgress = false;
 
-            if (topN == null || !topN.Any())
+            await _servicesLock.LockWriteAsync();
+
+            try
             {
-                var random = await TakeRandomWinner();
+                var winnerDuration = await EndVotingRound();
 
-                await _winnerRepository.CreateAsync(random);
+                _stateEndTime = DateTime.UtcNow.Add(TimeSpan.FromSeconds(30));
 
-                return random;
+                _roundCooldownTask = _scheduler.AddTask(async () => await RoundCooldownEnd(winnerDuration - TimeSpan.FromSeconds(30)), TimeSpan.FromSeconds(30));
             }
-
-            var winner = _mapper.Map<Winner>(topN.First());
-
-            winner.RoundNumber = _currentRound;
-
-            await _winnerRepository.CreateAsync(winner);
-
-            _logger.LogInformation($"Canción ganadora de la ronda {_currentRound}: {winner.Name} - {winner.Artist}.");
-
-            var excepted = topN.Skip(1).Select(s => s.SpotifySongId);
-
-            await _voteRepository.DeleteAllExceptAsync(excepted);
-            await _suggestionRepository.DeleteAllExceptAsync(excepted);
-
-            return winner;
+            finally
+            {
+                _servicesLock.UnlockWrite();
+                _lock.UnlockWrite();
+            }
         }
 
-        private async Task CancelVotingRound()
+        private async Task RoundCooldownEnd(TimeSpan nextRoundDuration)
+        {
+            await _lock.LockWriteAsync();
+
+            try
+            {
+                await StartVotingRound(nextRoundDuration);
+            }
+            finally
+            {
+                _lock.UnlockWrite();
+            }
+        }
+
+        private async Task RoundCancel()
         {
             _logger.LogInformation($"La ronda {_currentRound} fue cancelada.");
 
@@ -273,14 +232,45 @@ namespace chopify.Services.Implementations
             await _suggestionRepository.DeleteAllByRoundAsync(_currentRound);
         }
 
-        private async Task<Winner> TakeRandomWinner()
+        private async Task<TimeSpan> EndVotingRound()
+        {
+            _logger.LogInformation($"Finalizando la ronda {_currentRound}.");
+
+            var topN = await _suggestionRepository.GetTopNAsync(10);
+
+            if (topN == null || !topN.Any())
+            {
+                var random = await TakeRandomWinner();
+
+                await RegisterWinner(random);
+
+                return random.Duration;
+            }
+
+            var winner = _mapper.Map<Winner>(topN.First());
+
+            winner.RoundNumber = _currentRound;
+
+            await RegisterWinner(winner);
+
+            _logger.LogInformation($"Canción ganadora de la ronda {_currentRound}: {winner.Name} - {winner.Artist}.");
+
+            var excepted = topN.Skip(1).Select(s => s.SpotifySongId);
+
+            await _voteRepository.DeleteAllExceptAsync(excepted);
+            await _suggestionRepository.DeleteAllExceptAsync(excepted);
+
+            return winner.Duration;
+        }
+
+        private async Task<Winner?> TakeRandomWinner()
         {
             SongReadDTO? randomWinner;
 
             do
             {
                 randomWinner = _mapper.Map<SongReadDTO>(await SpotifyService.Instance.GetRandomTrackAsync());
-            } while (randomWinner == null || await _winnerRepository.GetBySongIdAsync(randomWinner.Id) != null);
+            } while (randomWinner == null || await _cooldownRepository.GetBySongIdAsync(randomWinner.Id) != null);
 
             var winner = _mapper.Map<Winner>(randomWinner);
 
@@ -289,6 +279,16 @@ namespace chopify.Services.Implementations
             winner.Votes = 0;
 
             return winner;
+        }
+
+        private async Task RegisterWinner(Winner winner)
+        {
+            await _winnerRepository.CreateAsync(winner);
+            await _cooldownRepository.CreateAsync(new Cooldown
+            {
+                SpotifySongId = winner.SpotifySongId,
+                CooldownEnd = DateTime.UtcNow.Add(_cooldownDuration)
+            });
         }
     }
 }

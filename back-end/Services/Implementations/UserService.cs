@@ -11,6 +11,8 @@ namespace chopify.Services.Implementations
 {
     public class UserService(IUserRepository userRepository, IMapper mapper) : IUserService
     {
+        private static readonly string[] invalidNames = ["admin", "administrador", "administradora", "sistema", "system"];
+
         private static readonly SemaphoreSlim _createSemaphore = new(1, 1);
         private static readonly SemaphoreSlim _updateSemaphore = new(1, 1);
 
@@ -19,8 +21,10 @@ namespace chopify.Services.Implementations
 
         public async Task<string> CreateAsync(UserUpsertDTO dto)
         {
-            if (dto.Name.Contains("sistema", StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException("El nombre no puede contener la palabra 'sistema'.", nameof(dto.Name));
+            var normalizedName = NormalizeName(dto.Name);
+
+            if (invalidNames.Contains(normalizedName))
+                throw new ArgumentException($"El nombre no puede contener la palabra '{normalizedName}'.");
 
             await _createSemaphore.WaitAsync();
 
@@ -73,7 +77,12 @@ namespace chopify.Services.Implementations
         public async Task<string> UpdateAsync(string id, UserUpsertDTO dto)
         {
             if (!ObjectId.TryParse(id, out var objectId))
-                throw new ArgumentException("El formato del ID no es válido.", nameof(id));
+                throw new ArgumentException("El formato del ID no es válido.");
+
+            var normalizedName = NormalizeName(dto.Name);
+
+            if (invalidNames.Contains(normalizedName))
+                throw new ArgumentException($"El nombre no puede contener la palabra '{normalizedName}'.");
 
             var user = await _userRepository.GetByIdAsync(objectId);
 

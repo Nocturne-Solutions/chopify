@@ -8,7 +8,8 @@ namespace chopify.Services.Interfaces
         {
             Success,
             IsActive,
-            IsNotActive
+            IsNotActive,
+            FailToGetFirstSong
         }
 
         Task<ResultCode> Start();

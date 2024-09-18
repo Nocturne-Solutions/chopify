@@ -15,21 +15,6 @@ namespace chopify.Controllers
     {
         private readonly IUserService _userService = userService;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll() =>
-            Ok(await _userService.GetAllAsync());
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
-        {
-            var user = await _userService.GetByIdAsync(id);
-
-            if (user == null)
-                return NotFound();
-
-            return Ok(user);
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create(UserUpsertDTO model)
         {
@@ -76,20 +61,6 @@ namespace chopify.Controllers
         public IActionResult ValidateToken()
         {
             return Ok(new { valid = true });
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, UserUpsertDTO model)
-        {
-            await _userService.UpdateAsync(id, model);
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            await _userService.DeleteAsync(id);
-            return NoContent();
         }
     }
 }

@@ -9,6 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let debounceTimeout;
     let status;
 
+    const suggestButtonHtml = `<button class="suggest-btn">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <i class="fas fa-check"></i>
+                                </button>`;
+
+    function suggestedLabelHtml(suggestedBy) {
+        return `<div class="suggested-label">Ya fue sugerida por <span class="suggested-by">${suggestedBy}</span></div>`;
+    }
+
+    function inCooldownLabelHtml(cooldownTimeLeft) {
+        return `<div class="cooldown-label">Se puede volver a sugerir en <span class="cooldown-time">${secondsToHHMMSS(cooldownTimeLeft)}</span></div>`;
+    }
+
     init();
     
     async function init() {
@@ -20,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filterSongs('');
         setInterval(async function() {
             checkSuggestions();
+            checkInCooldown();
             status = await checkStatus();
             if (status.state !== STATES.VOTING) {
                 window.location.href = 'winner.html';
@@ -27,13 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function updateSuggestions(li, isSuggested, suggestedBy)
+    function updateListElement(li, data)
     {
         let name = li.getAttribute('data-song-name');
         let artists = li.getAttribute('data-song-artists');
         let coverUrl = li.getAttribute('data-song-cover-url');
 
-        li.classList.toggle('suggested', isSuggested);
+        li.classList.toggle('suggested', data.isSuggested);
+        li.classList.toggle('inCooldown', data.isInCooldown);
 
         li.innerHTML = `
             <img src="${coverUrl}" alt="Cover" class="song-cover">
@@ -42,19 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="song-artists">${artists}</div>
             </div>
             ${
-                isSuggested
-                    ? `<div class="suggested-label">Ya fue sugerida por <span class="sugest-by">${suggestedBy}</span></div>`
-                    : `
-                <button class="suggest-btn">
-                    <i class="fas fa-lightbulb"></i>
-                    <i class="fas fa-check"></i>
-                </button>
-            `}
+                data.isInCooldown
+                    ? inCooldownLabelHtml(data.cooldownTimeLeft)
+                    : (data.isSuggested 
+                        ? suggestedLabelHtml(data.suggestedBy) 
+                        : suggestButtonHtml)
+            }
         `;
 
-        if (!isSuggested) {
-            const suggestButton = li.querySelector('.suggest-btn');
-            suggestButton.addEventListener('click', suggestItem);
+        if (!data.isInCooldown && !data.isSuggested) {
+            li.querySelector('.suggest-btn').addEventListener('click', suggestItem);
         }
     }
 
@@ -81,16 +93,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 let songId = li.getAttribute('data-song-id');
                 let suggestion = data.find(suggestion => suggestion.id === songId);
 
-                if (suggestion && !li.classList.contains('suggested')) {
-                    updateSuggestions(li, true, suggestion.suggestedBy);
+                if (suggestion && !li.classList.contains('suggested') && !li.classList.contains('inCooldown')) {
+                    updateListElement(li, { isSuggested: true, isInCooldown: false, suggestedBy: suggestion.suggestedBy, cooldownTimeLeft: 0 });
                 }
-                else if (!suggestion && li.classList.contains('suggested')) {
-                    updateSuggestions(li, false, '');
+                else if (!suggestion && li.classList.contains('suggested') && !li.classList.contains('inCooldown')) {
+                    updateListElement(li, { isSuggested: false, isInCooldown: false, suggestedBy: '', cooldownTimeLeft: 0 });
                 }
             });
         })
         .catch(error => {
             console.error('Error al obtener las sugerencias:', error);
+        });
+    }
+
+    function checkInCooldown()
+    {
+        fetch(API_BASE_URL + '/cooldown', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('La sesión ha expirado o no has iniciado sesión.');
+                window.location.href = '../index.html';
+            } else if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            return response.json();
+        })
+        .then(data => {
+            songList.querySelectorAll('li').forEach(li => {
+                let songId = li.getAttribute('data-song-id');
+                let cooldown = data.find(cooldown => cooldown.id === songId);
+
+                if (cooldown && !li.classList.contains('inCooldown')) {
+                    updateListElement(li, { isSuggested: li.classList.contains('suggested'), isInCooldown: true, suggestedBy: li.querySelector('.suggested-by').textContent, cooldownTimeLeft: cooldown.cooldownTimeLeft });
+                }
+                else if (!cooldown && li.classList.contains('inCooldown')) {
+                    updateListElement(li, { isSuggested: li.classList.contains('suggested'), isInCooldown: false, suggestedBy: li.querySelector('.suggested-by').textContent, cooldownTimeLeft: 0 });
+                }
+                else if (cooldown && li.classList.contains('inCooldown')) {
+                    li.querySelector('.cooldown-time').textContent = secondsToHHMMSS(cooldown.cooldownTimeLeft);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error al obtener las canciones en enfriamiento:', error);
         });
     }
 
@@ -170,29 +221,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
-    function addSong(id, name, artists, coverUrl, isSuggested = false, suggestedBy = '') {
+    function addSong(song) {
         const li = document.createElement('li');
-        li.classList.toggle('suggested', isSuggested);
-        li.setAttribute('data-song-id', id);
-        li.setAttribute('data-song-name', name);
-        li.setAttribute('data-song-artists', artists);
-        li.setAttribute('data-song-cover-url', coverUrl);
+        li.classList.toggle('suggested', song.isSuggested);
+        li.classList.toggle('inCooldown', song.isInCooldown);
+        li.setAttribute('data-song-id', song.id);
+        li.setAttribute('data-song-name', song.name);
+        li.setAttribute('data-song-artists', song.artists);
+        li.setAttribute('data-song-cover-url', song.coverUrl);
 
         li.innerHTML = `
-            <img src="${coverUrl}" alt="Cover" class="song-cover">
+            <img src="${song.coverUrl}" alt="Cover" class="song-cover">
             <div class="song-details">
-                <div class="song-name">${name}</div>
-                <div class="song-artists">${artists}</div>
+                <div class="song-name">${song.name}</div>
+                <div class="song-artists">${song.artists}</div>
             </div>
             ${
-                isSuggested
-                    ? `<div class="suggested-label">Ya fue sugerida por <span class="sugest-by">${suggestedBy}</span></div>`
-                    : `
-                <button class="suggest-btn">
-                    <i class="fas fa-lightbulb"></i>
-                    <i class="fas fa-check"></i>
-                </button>
-            `}
+                song.isInCooldown
+                    ? inCooldownLabelHtml(song.cooldownTimeLeft)
+                    : (song.isSuggested 
+                        ? suggestedLabelHtml(song.suggestedBy)
+                        : suggestButtonHtml)
+            }
         `;
 
         li.classList.add('new-item');
@@ -202,9 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
             li.classList.remove('new-item');
         }, 300);
 
-        if (!isSuggested) {
-            const suggestButton = li.querySelector('.suggest-btn');
-            suggestButton.addEventListener('click', suggestItem);
+        if (!song.isSuggested && !song.isInCooldown) {
+            li.querySelector('.suggest-btn').addEventListener('click', suggestItem);
         }
     }
 
@@ -254,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSpinner();
 
             data.forEach(item => {
-                addSong(item.id, item.name, item.artist, item.coverUrl, item.isSuggested, item.suggestedBy);
+                addSong(item);
             });
         })
         .catch(error => {

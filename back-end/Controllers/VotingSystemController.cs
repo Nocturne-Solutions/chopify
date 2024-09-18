@@ -18,6 +18,8 @@ namespace chopify.Controllers
             {
                 case IVotingSystemService.ResultCode.IsActive:
                     return BadRequest(new { message = "El sistema ya esta en marcha." });
+                case IVotingSystemService.ResultCode.FailToGetFirstSong:
+                    return BadRequest(new { message = "No se pudo obtener la primera canción." });
                 case IVotingSystemService.ResultCode.Success:
                 case IVotingSystemService.ResultCode.IsNotActive:
                     break;

@@ -91,3 +91,15 @@ function secondsToMMSS(seconds) {
 
   return minutes + ':' + remainingSeconds;
 }
+
+function secondsToHHMMSS(seconds) {
+  let hours = Math.floor(Math.round(seconds) / 3600);
+  let minutes = Math.floor(Math.round(seconds) / 60) % 60;
+  let remainingSeconds = Math.round(seconds) % 60;
+
+  hours = hours < 10 ? '0' + hours : hours;
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  remainingSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
+
+  return hours + ':' + minutes + ':' + remainingSeconds;
+}

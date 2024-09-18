@@ -1,74 +1,19 @@
 using chopify.Configurations;
 using chopify.External;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
-using System.Text;
+using chopify.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CORS configuration
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAllOrigins",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
-
-// Custom dependency injection
+builder.Services.AddCorsPolicy();
 builder.Services.DependencyInjection();
+builder.Services.ConfigureMongoDb(builder.Configuration);
+builder.Services.ConfigureJwt(builder.Configuration);
 
-// Get MongoDB connection settings from environment variables
-var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
-var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
-var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-
-if (string.IsNullOrWhiteSpace(mongoConnectionString))
-    throw new ArgumentNullException(nameof(mongoConnectionString), "MONGODB_CONNECTION_STRING environment is not properly configured.");
-
-if (string.IsNullOrWhiteSpace(mongoDatabaseName))
-    throw new ArgumentNullException(nameof(mongoDatabaseName), "MONGODB_DATABASE_NAME environment is not properly configured.");
-
-if (string.IsNullOrWhiteSpace(jwtSecretKey))
-    throw new ArgumentNullException(nameof(jwtSecretKey), "JWT_SECRET_KEY environment is not properly configured.");
-
-// Register IMongoClient using the connection string from the environment variable
-builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(mongoConnectionString));
-
-// Register the SpotifyService as a singleton
-builder.Services.AddSingleton(SpotifyService.Instance);
-
-// Register the database name in the settings (you can modify MongoDBSettings if necessary)
-builder.Services.Configure<MongoDBSettings>(options =>
-{
-    options.DatabaseName = mongoDatabaseName;
-});
-
-// AutoMapper configuration
 builder.Services.AddSingleton(AutoMapperConfig.GetInstance().CreateMapper());
+builder.Services.AddSingleton(SpotifyService.Instance);
+builder.Services.AddSingleton<Scheduler>();
+builder.Services.AddSingleton<GarbashCollectorsConfig>();
 
-// jwt tokens validation
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = "chopify.com.ar",
-        ValidAudience = "chopify.com.ar",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
-    };
-});
-
-// Add controllers and additional services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -83,9 +28,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Map controllers
 app.MapControllers();
+
+app.Services.GetRequiredService<GarbashCollectorsConfig>();
 
 app.Run();
