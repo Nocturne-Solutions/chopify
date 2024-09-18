@@ -24,6 +24,7 @@ body {
 
 .winner-content {
     padding: 2rem;
+    display: none;
     background-color: #263238;
     color: #e0f2f1;
     border: 2px solid #4f5b62;
@@ -137,7 +138,6 @@ body {
 
 .loading-content {
     padding: 2rem;
-    display: none;
     background-color: rgba(30, 30, 30, 0.85);
     box-shadow: 0 0px 20px rgba(10, 0, 0, 0.8);
     border-radius: 12px;

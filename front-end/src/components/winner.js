@@ -60,16 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return await response.json();
     }
 
-    updateWinner(
-        {
-            name: 'Dance Monkey',
-            artists: 'Tones and I',
-            coverUrl: 'https://i.scdn.co/image/ab67616d0000b273f975282219ded7470e667000',
-            suggestBy: 'Juan Pérez',
-            votes: 5
-        }
-    );
-
     function updateWinner(winner) {
         document.getElementById('winnerName').textContent = winner.name;
         document.getElementById('winnerArtists').textContent = winner.artists;
