@@ -2,7 +2,7 @@
 {
     public static class CorsConfig
     {
-        public static void AddCorsPolicy(this IServiceCollection services)
+        public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
         {
             services.AddCors(options =>
             {
@@ -11,6 +11,8 @@
                                     .AllowAnyMethod()
                                     .AllowAnyHeader());
             });
+
+            return services;
         }
     }
 }
