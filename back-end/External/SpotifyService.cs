@@ -46,16 +46,6 @@ namespace chopify.External
 
         public async Task<IEnumerable<FullTrack>> GetMostPopularTracksArgentinaAsync()
         {
-            try
-            {
-            var profile = await client.UserProfile.Current();
-            Console.WriteLine($"Hello there {profile.DisplayName}");
-            }
-            catch (APIUnauthorizedException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
             var playlist = await client.Playlists.Get("37i9dQZEVXbMMy2roB9myp");
 
             if (playlist == null || playlist.Tracks == null || playlist.Tracks.Items == null)

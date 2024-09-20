@@ -11,7 +11,7 @@ namespace chopify.Data.Repositories.Implementations
         private readonly IMongoCollection<Cooldown> _collection = mongoClient.GetDatabase(settings.Value.DatabaseName).GetCollection<Cooldown>("cooldown");
 
         public override async Task<IEnumerable<Cooldown>> GetAllAsync() =>
-            await _collection.Find(Builders<Cooldown>.Filter.Gte(s => s.CooldownEnd, DateTime.UtcNow)).ToListAsync();
+            await _collection.Find(Builders<Cooldown>.Filter.Lt(s => s.CooldownEnd, DateTime.UtcNow)).ToListAsync();
 
         public async Task DeleteAllAsync() =>
             await _collection.DeleteManyAsync(FilterDefinition<Cooldown>.Empty);
