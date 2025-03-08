@@ -8,9 +8,10 @@ builder.Services.AddCorsPolicy();
 builder.Services.DependencyInjection();
 builder.Services.ConfigureMongoDb(builder.Configuration);
 builder.Services.ConfigureJwt(builder.Configuration);
+builder.Services.ConfigureSpotify(builder.Configuration);
 
 builder.Services.AddSingleton(AutoMapperConfig.GetInstance().CreateMapper());
-builder.Services.AddSingleton(SpotifyService.Instance);
+builder.Services.AddSingleton<SpotifyService>();
 builder.Services.AddSingleton<Scheduler>();
 builder.Services.AddSingleton<GarbashCollectorsConfig>();
 

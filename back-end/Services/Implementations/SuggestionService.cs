@@ -7,11 +7,12 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class SuggestionService(ISongRepository songRepository, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, 
-                                  IVotingSystemService votingRoundService, ICooldownRepository cooldownRepository, IMapper mapper) : ISuggestionService
+    public class SuggestionService(SpotifyService spotifyService, ISongRepository songRepository, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, 
+                                   IVotingSystemService votingRoundService, ICooldownRepository cooldownRepository, IMapper mapper) : ISuggestionService
     {
         private static readonly SemaphoreSlim _suggestSemaphore = new(1, 1);
 
+        private readonly SpotifyService _sporifyService = spotifyService;
         private readonly ISongRepository _songRepository = songRepository;
         private readonly IVoteRepository _voteRepository = voteRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
@@ -24,7 +25,7 @@ namespace chopify.Services.Implementations
             if (!await _votingRoundService.Lock())
                 return ISuggestionService.ResultCodes.NoRoundInProgress;
 
-            var song = _mapper.Map<SongReadDTO>(await SpotifyService.Instance.GetFullTrackById(suggestionDto.SpotifySongId));
+            var song = _mapper.Map<SongReadDTO>(await _sporifyService.GetFullTrackById(suggestionDto.SpotifySongId));
 
             if (song == null)
                 return ISuggestionService.ResultCodes.SongNotFound;

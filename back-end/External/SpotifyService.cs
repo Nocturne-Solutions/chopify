@@ -1,33 +1,13 @@
-﻿using chopify.Data.Entities;
+﻿using chopify.Configurations;
+using chopify.Data.Entities;
+using Microsoft.Extensions.Options;
 using SpotifyAPI.Web;
 
 namespace chopify.External
 {
-    public class SpotifyService
+    public class SpotifyService(IOptions<SpotifySettings> settings)
     {
-        private readonly SpotifyClient client;
-
-        private static readonly Lazy<SpotifyService> _instance = new(() => new SpotifyService());
-
-        private SpotifyService()
-        {
-            var spotifyClientId = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID");
-            var spotifyClientSecret = Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_SECRET");
-
-            if (string.IsNullOrWhiteSpace(spotifyClientId))
-                throw new ArgumentNullException("SPOTIFY_CLIENT_ID enviroment is not properly configured.");
-
-            if (string.IsNullOrWhiteSpace(spotifyClientSecret))
-                throw new ArgumentNullException("SPOTIFY_CLIENT_SECRET enviroment is not properly configured.");
-
-            var config = SpotifyClientConfig
-              .CreateDefault()
-              .WithAuthenticator(new ClientCredentialsAuthenticator(spotifyClientId, spotifyClientSecret));
-
-            client = new SpotifyClient(config);
-        }
-
-        public static SpotifyService Instance => _instance.Value;
+        private readonly SpotifyClient client = new(SpotifyClientConfig.CreateDefault().WithAuthenticator(new ClientCredentialsAuthenticator(settings.Value.ClientId, settings.Value.ClientSecret)));
 
         public async Task<IEnumerable<FullTrack>> FetchTracksAsync(string search, int limit = 15)
         {

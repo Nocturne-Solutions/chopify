@@ -6,16 +6,17 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class SongService(ISongRepository songRepository, ISuggestionRepository suggestionRepository, ICooldownRepository cooldownRepository, IMapper mapper) : ISongService
+    public class SongService(SpotifyService spotifyService, ISongRepository songRepository, ISuggestionRepository suggestionRepository, ICooldownRepository cooldownRepository, IMapper mapper) : ISongService
     {
         private readonly ISongRepository _songRepository = songRepository;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
         private readonly ICooldownRepository _cooldownRepository = cooldownRepository;
         private readonly IMapper _mapper = mapper;
+        private readonly SpotifyService _sporifyService = spotifyService;
 
         public async Task<IEnumerable<SongReadDTO>> FetchAsync(string search)
         {
-            var result = _mapper.Map<IEnumerable<SongReadDTO>>(await SpotifyService.Instance.FetchTracksAsync(search));
+            var result = _mapper.Map<IEnumerable<SongReadDTO>>(await _sporifyService.FetchTracksAsync(search));
 
             if (result == null || !result.Any())
                 return [];
@@ -28,7 +29,7 @@ namespace chopify.Services.Implementations
 
         public async Task<IEnumerable<SongReadDTO>> GetMostPopularSongsArgentinaAsync()
         {
-            var mostPopularSongs = _mapper.Map<IEnumerable<SongReadDTO>>(await SpotifyService.Instance.GetMostPopularTracksArgentinaAsync());
+            var mostPopularSongs = _mapper.Map<IEnumerable<SongReadDTO>>(await _sporifyService.GetMostPopularTracksArgentinaAsync());
 
             if (mostPopularSongs == null || !mostPopularSongs.Any())
                 return [];

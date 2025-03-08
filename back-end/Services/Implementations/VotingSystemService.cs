@@ -8,7 +8,7 @@ using chopify.Services.Interfaces;
 
 namespace chopify.Services.Implementations
 {
-    public class VotingSystemService(ILogger<VotingSystemService> logger, Scheduler scheduler, IMapper mapper, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, IWinnerRepository winnerRepository, ICooldownRepository cooldownRepository) : IVotingSystemService
+    public class VotingSystemService(ILogger<VotingSystemService> logger, SpotifyService spotifyService, Scheduler scheduler, IMapper mapper, ISuggestionRepository suggestionRepository, IVoteRepository voteRepository, IWinnerRepository winnerRepository, ICooldownRepository cooldownRepository) : IVotingSystemService
     {
         private static readonly AsyncReaderWriterLock _lock = new();
         private static readonly AsyncReaderWriterLock _servicesLock = new();
@@ -23,6 +23,7 @@ namespace chopify.Services.Implementations
         private static Guid _roundCooldownTask;
 
         private readonly ILogger<VotingSystemService> _logger = logger;
+        private readonly SpotifyService _spotifyService = spotifyService;
         private readonly Scheduler _scheduler = scheduler;
         private readonly IMapper _mapper = mapper;
         private readonly ISuggestionRepository _suggestionRepository = suggestionRepository;
@@ -270,7 +271,7 @@ namespace chopify.Services.Implementations
 
             do
             {
-                randomWinner = _mapper.Map<SongReadDTO>(await SpotifyService.Instance.GetRandomTrackAsync());
+                randomWinner = _mapper.Map<SongReadDTO>(await _spotifyService.GetRandomTrackAsync());
             } while (randomWinner == null || await _cooldownRepository.GetBySongIdAsync(randomWinner.Id) != null);
 
             var winner = _mapper.Map<Winner>(randomWinner);
